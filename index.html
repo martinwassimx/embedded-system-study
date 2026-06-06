@@ -1274,7 +1274,8 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
   <a href="#c6">📊 Ch 6 · Pareto 80/20</a>
   <a href="#c7">🔔 Ch 7 · Interrupts</a>
   <a href="#c8">🚀 Ch 8 · Performance</a>
-  <a href="#quiz">🧠 Quiz</a>
+  <a href="#quiz">🧠 Quick Check</a>
+  <a href="#quizzes">🎯 200 MCQs</a>
 </nav>
 
 <!-- ===================== CHAPTER 4 ===================== -->
@@ -1583,7 +1584,102 @@ ISR(INT0_vect){       // handler
     <div><strong>You made it!</strong><p>Pipelining = parallel stages · Pareto = focus on the vital 20% · Interrupts = react on demand · Performance = profile then optimize the hotspots. Good luck on the exam!</p></div>
   </div>
 
-  <p class="notion-footer">Built from Chapters 4, 6, 7 &amp; 8 · Animated study guide · Hover, flip, and quiz yourself.</p>
+<!-- ===================== MORE INFO / DEEP DIVE ===================== -->
+<section id="more">
+  <div class="chap-head c4 reveal" style="background:linear-gradient(120deg,#6366f1,#0ea5e9)">
+    <span class="emoji">📚</span>
+    <div>
+      <span class="chap-tag">Go Deeper</span>
+      <h2>Extra Notes &amp; Key Formulas</h2>
+      <p class="sub">The details that win exam marks — gathered in one place.</p>
+    </div>
+  </div>
+
+  <h3 class="reveal">⚡ Chapter 4 — numbers &amp; terms worth memorizing</h3>
+  <div class="notion-stat-grid reveal">
+    <div class="notion-stat"><div class="notion-stat-value">4500 ns</div><div class="notion-stat-label">Single-cycle (45ns × 100)</div></div>
+    <div class="notion-stat"><div class="notion-stat-value">4600 ns</div><div class="notion-stat-label">Multicycle (10ns × 4.6 × 100)</div></div>
+    <div class="notion-stat"><div class="notion-stat-value">1040 ns</div><div class="notion-stat-label">Pipelined (10ns × 104)</div></div>
+    <div class="notion-stat"><div class="notion-stat-value">CPI 1.6</div><div class="notion-stat-label">20% branches × 3-cycle penalty</div></div>
+  </div>
+  <dl class="notion-glossary reveal">
+    <div class="notion-term"><dt>Throughput vs. Latency</dt><dd>Pipelining raises throughput (instructions finished per second) but does <b>not</b> shorten a single instruction's latency.</dd></div>
+    <div class="notion-term"><dt>Speedup</dt><dd>Ideal speedup ≈ number of stages. Reduced by unbalanced stages and fill/drain time.</dd></div>
+    <div class="notion-term"><dt>Forwarding (Bypassing)</dt><dd>Send an ALU result straight to a waiting instruction to avoid a stall.</dd></div>
+    <div class="notion-term"><dt>Harvard Architecture</dt><dd>Separate instruction &amp; data memories — removes the structural hazard of one shared memory.</dd></div>
+    <div class="notion-term"><dt>Squash / Flush</dt><dd>Discard wrongly-fetched instructions after a taken branch.</dd></div>
+    <div class="notion-term"><dt>CPI Formula</dt><dd>CPI = 1 + (branch frequency × penalty). Here 1 + 0.2×3 = 1.6 → ~60% slower.</dd></div>
+  </dl>
+
+  <h3 class="reveal">📊 Chapter 6 — Pareto cheat sheet</h3>
+  <div class="notion-callout reveal" data-tone="orange">
+    <div>🧮</div>
+    <div><strong>The 100-defect example, fully worked</strong>
+      <p>Counts: A=50, B=30, C=10, D=6, E=4. Cumulative %: A=50 → B=80 → C=90 → D=96 → E=100. <b>Vital few = A + B (80%)</b>; trivial many = C, D, E (20%). Fix A &amp; B first to remove ~80% of all defects.</p>
+    </div>
+  </div>
+  <dl class="notion-glossary reveal">
+    <div class="notion-term"><dt>Origin</dt><dd>Vilfredo Pareto (Italian economist): 80% of Italy's land owned by 20% of people. Generalized by Joseph Juran for quality.</dd></div>
+    <div class="notion-term"><dt>Pareto Chart</dt><dd>Bars sorted high→low + a cumulative-% line + an 80% threshold line.</dd></div>
+    <div class="notion-term"><dt>Strength</dt><dd>Simple, fast, great for prioritizing the highest-impact causes.</dd></div>
+    <div class="notion-term"><dt>Limitation</dt><dd>Not mathematically exact — a guideline, not a rule. Don't ignore the other 80% entirely.</dd></div>
+  </dl>
+
+  <h3 class="reveal">🔔 Chapter 7 — AVR interrupt quick reference</h3>
+  <dl class="notion-glossary reveal">
+    <div class="notion-term"><dt>Polling vs Interrupt</dt><dd>Polling ties up the CPU checking devices; interrupts let the device signal only when it needs service.</dd></div>
+    <div class="notion-term"><dt>ISR / IVT</dt><dd>ISR = the handler routine. IVT = table holding each ISR's address.</dd></div>
+    <div class="notion-term"><dt>Priority</dt><dd>Lower vector number = higher priority, so INT0 outranks INT1.</dd></div>
+    <div class="notion-term"><dt>Global Enable</dt><dd>Bit 7 (I) of SREG; set with <code>sei()</code>. Cleared on reset and auto-cleared inside an ISR.</dd></div>
+    <div class="notion-term"><dt>Key Registers</dt><dd><code>MCUCR</code> sets edge/level trigger; <code>GICR</code> enables INT0/INT1. INT0=PD2, INT1=PD3.</dd></div>
+    <div class="notion-term"><dt>5 Steps</dt><dd>Include header → write <code>ISR()</code> → enable specific interrupt → configure trigger → <code>sei()</code>.</dd></div>
+  </dl>
+  <div class="notion-callout reveal" data-tone="green">
+    <div>💡</div>
+    <div><strong>Toggle PB5 on INT0 (Example 2)</strong>
+      <p><code>DDRB=1&lt;&lt;5; MCUCR=0x2; GICR|=(1&lt;&lt;INT0); sei(); while(1);</code> with <code>ISR(INT0_vect){ PORTB^=(1&lt;&lt;5); }</code> — MCUCR=0x2 selects falling-edge trigger.</p>
+    </div>
+  </div>
+
+  <h3 class="reveal">🚀 Chapter 8 — performance toolkit</h3>
+  <div class="notion-card-grid reveal">
+    <article class="notion-card"><div class="notion-card-icon">🐧</div><h3>gprof</h3><p>Time per function, call counts &amp; call graph.</p></article>
+    <article class="notion-card"><div class="notion-card-icon">📟</div><h3>perf (Linux)</h3><p>CPU cycles, cache misses, branch mispredictions.</p></article>
+    <article class="notion-card"><div class="notion-card-icon">☕</div><h3>VisualVM</h3><p>GUI profiler for Java — memory, CPU, threads.</p></article>
+    <article class="notion-card"><div class="notion-card-icon">🔬</div><h3>Intel VTune</h3><p>Deep hardware analysis for C/C++ &amp; parallel apps.</p></article>
+  </div>
+  <div class="notion-callout reveal" data-tone="purple">
+    <div>📈</div>
+    <div><strong>Worked example — 10,000 records</strong>
+      <p>Runtime 5 s; profiling shows sorting is 60% of the time. Swap Bubble Sort O(n²) → Merge Sort O(n log n): runtime drops to ~3 s = <b>1.67× faster, 40% improvement</b>. Workflow: profile → find hotspots → optimize the vital 20% → re-measure.</p>
+    </div>
+  </div>
+
+  <div class="reveal" style="margin-top:14px">
+    <span class="kt">Correctness</span> <span class="kt">Latency</span> <span class="kt">Throughput</span> <span class="kt">Scalability</span> <span class="kt">Loop unrolling</span> <span class="kt">Inlining</span> <span class="kt">Dead-code elimination</span> <span class="kt">Constant folding</span> <span class="kt">Caching</span>
+  </div>
+</section>
+
+<!-- ===================== QUIZ HUB ===================== -->
+<section id="quizzes">
+  <div class="chap-head c7 reveal" style="background:linear-gradient(120deg,#ec4899,#f59e0b)">
+    <span class="emoji">🎯</span>
+    <div>
+      <span class="chap-tag">Practice Zone</span>
+      <h2>200 MCQs — 50 per Chapter</h2>
+      <p class="sub">Each quiz is its own page with instant feedback, explanations &amp; a live score.</p>
+    </div>
+  </div>
+  <p class="reveal notion-muted" style="text-align:center;max-width:640px;margin:0 auto 4px">Pick a chapter and start practicing. Correct answers turn green, mistakes reveal the right one, and every question explains itself. Finish all 50 to get graded! 🏆</p>
+  <div class="notion-card-grid reveal">
+    <a class="notion-card" href="Quiz - Chapter 4.html" style="text-decoration:none;color:inherit"><div class="notion-card-icon">⚡</div><h3>Chapter 4 · Pipelining</h3><p>50 MCQs — laundry analogy, MIPS stages, hazards &amp; performance math.</p><span class="notion-badge">Start quiz →</span></a>
+    <a class="notion-card" href="Quiz - Chapter 6.html" style="text-decoration:none;color:inherit"><div class="notion-card-icon">📊</div><h3>Chapter 6 · Pareto</h3><p>50 MCQs — the 80/20 rule, vital few, Pareto charts &amp; the worked example.</p><span class="notion-badge">Start quiz →</span></a>
+    <a class="notion-card" href="Quiz - Chapter 7.html" style="text-decoration:none;color:inherit"><div class="notion-card-icon">🔔</div><h3>Chapter 7 · Interrupts</h3><p>50 MCQs — polling vs interrupts, ISR/IVT, priority &amp; AVR registers.</p><span class="notion-badge">Start quiz →</span></a>
+    <a class="notion-card" href="Quiz - Chapter 8.html" style="text-decoration:none;color:inherit"><div class="notion-card-icon">🚀</div><h3>Chapter 8 · Performance</h3><p>50 MCQs — metrics, profiling tools, optimization &amp; trade-offs.</p><span class="notion-badge">Start quiz →</span></a>
+  </div>
+</section>
+
+  <p class="notion-footer">Built from Chapters 4, 6, 7 &amp; 8 · Animated study guide + 200 practice MCQs · Hover, flip, and quiz yourself.</p>
 </section>
 
 </main>
