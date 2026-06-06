@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 7 — Interrupts (AVR) — Quiz</title>
+<style>
+/*
+ * _base.css — Global design tokens, element defaults, page shell, and tiny utilities.
+ * ALWAYS included in every page.
+ *
+ * Provides:
+ *   :root variables (light + dark), box-sizing, html/body,
+ *   element defaults (button, input, select, textarea, label, fieldset, legend,
+ *   a, hr, img, h1-h4, p, ul/ol/li, blockquote, table/th/td, details/summary,
+ *   pre/code), main / .notion-shell, utility classes, .notion-footer,
+ *   reduced-motion and responsive breakpoints for base elements.
+ */
+
+:root {
+	color-scheme: light dark;
+	--notion-bg: #ffffff;
+	--notion-bg-soft: #f9f9f8;
+	--notion-surface: #ffffff;
+	--notion-surface-hover: #f6f5f4;
+	--notion-text: #191918;
+	--notion-text-soft: rgba(0, 0, 0, 0.54);
+	--notion-text-faint: rgba(0, 0, 0, 0.3);
+	--notion-border: rgba(0, 0, 0, 0.1);
+	--notion-border-soft: rgba(0, 0, 0, 0.05);
+	--notion-shadow:
+		0px 0.7px 1.462px rgba(0, 0, 0, 0.015), 0px 3px 9px rgba(0, 0, 0, 0.03);
+	--notion-blue: #2783de;
+	--notion-orange: #d5803b;
+	--notion-red: #e56458;
+	--notion-blue-bg: #f3f9fd;
+	--notion-yellow-bg: #fcfaef;
+	--notion-orange-bg: #fcf7f4;
+	--notion-green-bg: #f6f9f7;
+	--notion-red-bg: #fdf6f6;
+	--notion-gray-bg: #f9f8f7;
+	--notion-radius: 8px;
+	--notion-page-width: 900px;
+	--notion-chart-1: #5e9fe8;
+	--notion-chart-2: #eac26b;
+	--notion-chart-3: #72bc8f;
+	--notion-chart-4: #bf8eda;
+	--notion-chart-5: #de9255;
+	--notion-chart-6: #df84a8;
+	--notion-chart-7: #4fb9c9;
+	--notion-chart-8: #e97366;
+	--diff-add: #47c1b6;
+	--diff-del: #f07070;
+	--pr-approved: #2b8a3e;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--notion-bg: #000000;
+		--notion-bg-soft: #191918;
+		--notion-surface: #191918;
+		--notion-surface-hover: #31302e;
+		--notion-text: #ffffff;
+		--notion-text-soft: rgba(255, 255, 255, 0.5);
+		--notion-text-faint: rgba(255, 255, 255, 0.3);
+		--notion-border: rgba(255, 255, 255, 0.2);
+		--notion-border-soft: rgba(255, 255, 255, 0.1);
+		--notion-shadow:
+			0px 0.7px 1.462px rgba(0, 0, 0, 0.06), 0px 3px 9px rgba(0, 0, 0, 0.12);
+		--notion-blue: #5e9fe8;
+		--notion-orange: #de9255;
+		--notion-red: #e97366;
+		--notion-blue-bg: rgba(41, 139, 253, 0.061);
+		--notion-yellow-bg: rgba(203, 145, 47, 0.08);
+		--notion-orange-bg: rgba(246, 126, 35, 0.08);
+		--notion-green-bg: rgba(42, 157, 118, 0.08);
+		--notion-red-bg: rgba(246, 73, 50, 0.08);
+		--notion-gray-bg: #31302e;
+		--diff-add: #5dd8cb;
+		--diff-del: #ff8a80;
+		--pr-approved: #69db7c;
+	}
+}
+
+* {
+	box-sizing: border-box;
+}
+html {
+	scroll-behavior: smooth;
+}
+body {
+	margin: 0;
+	background: var(--notion-bg);
+	color: var(--notion-text);
+	font-family:
+		ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica,
+		"Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol";
+	font-size: 16px;
+	line-height: 1.5;
+	transition:
+		background 180ms ease,
+		color 180ms ease;
+}
+
+/* -- Base element defaults -------------------------------- */
+button,
+[type="button"],
+[type="submit"],
+[type="reset"] {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	padding: 8px 16px;
+	font: inherit;
+	font-size: 14px;
+	font-weight: 500;
+	line-height: 1.2;
+	color: #ffffff;
+	background: var(--notion-blue);
+	border: 1px solid transparent;
+	border-radius: 8px;
+	cursor: pointer;
+	transition: background 150ms;
+	white-space: nowrap;
+}
+button:hover,
+[type="button"]:hover,
+[type="submit"]:hover,
+[type="reset"]:hover {
+	background: color-mix(in srgb, var(--notion-blue) 82%, black);
+}
+button:focus-visible,
+[type="button"]:focus-visible,
+[type="submit"]:focus-visible,
+[type="reset"]:focus-visible {
+	outline: 2px solid var(--notion-blue);
+	outline-offset: 2px;
+}
+
+input,
+select,
+textarea {
+	font: inherit;
+	font-size: 14px;
+	line-height: 1.4;
+	color: var(--notion-text);
+	background: var(--notion-surface);
+	border: 1px solid var(--notion-border);
+	border-radius: 8px;
+	padding: 8px 12px;
+	transition: border-color 150ms;
+}
+input:focus,
+select:focus,
+textarea:focus {
+	outline: none;
+	border-color: var(--notion-blue);
+	box-shadow: 0 0 0 2px rgba(9, 127, 232, 0.15);
+}
+input::placeholder,
+textarea::placeholder {
+	color: var(--notion-text-faint);
+}
+select {
+	appearance: none;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 4.5L6 7.5L9 4.5' fill='none' stroke='%23999' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+	background-repeat: no-repeat;
+	background-position: right 10px center;
+	padding-right: 30px;
+}
+textarea {
+	resize: vertical;
+	min-height: 80px;
+}
+input[type="range"] {
+	border: none;
+	padding: 0;
+	background: transparent;
+	accent-color: var(--notion-blue);
+	height: 18px;
+	cursor: pointer;
+	box-shadow: none;
+}
+input[type="range"]:focus {
+	box-shadow: none;
+}
+input[type="checkbox"],
+input[type="radio"] {
+	width: 16px;
+	height: 16px;
+	accent-color: var(--notion-blue);
+	border: 1px solid var(--notion-border);
+	padding: 0;
+	cursor: pointer;
+}
+label {
+	display: block;
+	font-size: 14px;
+	font-weight: 600;
+	color: var(--notion-text);
+	margin-bottom: 6px;
+}
+fieldset {
+	border: 1px solid var(--notion-border-soft);
+	border-radius: 10px;
+	padding: 16px;
+	margin: 0;
+}
+legend {
+	font-weight: 600;
+	padding: 0 4px;
+}
+
+a {
+	color: var(--notion-text);
+	text-decoration: underline;
+	text-underline-offset: 2px;
+	text-decoration-color: var(--notion-border);
+}
+a:hover {
+	text-decoration-color: var(--notion-text);
+}
+
+hr {
+	height: 1px;
+	margin: 34px 0;
+	border: none;
+	background: var(--notion-border-soft);
+}
+
+img {
+	max-width: 100%;
+	height: auto;
+	border-radius: 8px;
+}
+
+h1,
+h2,
+h3,
+h4 {
+	text-wrap: balance;
+}
+h1 {
+	margin: 0 0 14px;
+	font-size: clamp(42px, 7vw, 72px);
+	line-height: 1.1;
+	letter-spacing: -0.035em;
+	font-weight: 700;
+}
+h2 {
+	margin: 44px 0 10px;
+	font-size: 32px;
+	line-height: 1.25;
+	letter-spacing: -0.025em;
+}
+h3 {
+	margin: 0 0 6px;
+	font-size: 18px;
+	line-height: 1.556;
+	letter-spacing: -0.007em;
+}
+p {
+	margin: 0 0 10px;
+}
+
+ul,
+ol {
+	margin: 8px 0 16px;
+	padding-left: 24px;
+}
+li {
+	margin-bottom: 4px;
+}
+li::marker {
+	color: var(--notion-text-faint);
+}
+
+blockquote {
+	border-left: 3px solid var(--notion-text);
+	padding: 4px 0 4px 16px;
+	margin: 24px 0;
+}
+blockquote p {
+	font-size: 18px;
+	line-height: 1.5;
+	margin: 0;
+}
+
+table {
+	width: 100%;
+	margin: 14px 0;
+	border-collapse: separate;
+	border-spacing: 0;
+	border: 1px solid var(--notion-border-soft);
+	border-radius: 10px;
+	overflow: hidden;
+	background: var(--notion-surface);
+	font-size: 14px;
+}
+th,
+td {
+	padding: 12px 14px;
+	vertical-align: top;
+	text-align: left;
+	border-right: 1px solid var(--notion-border-soft);
+	border-bottom: 1px solid var(--notion-border-soft);
+}
+th:last-child,
+td:last-child {
+	border-right: 0;
+}
+tr:last-child td {
+	border-bottom: 0;
+}
+th {
+	background: var(--notion-bg-soft);
+	color: var(--notion-text-soft);
+	font-weight: 600;
+}
+
+details {
+	margin: 16px 0;
+	border-radius: var(--notion-radius);
+}
+summary {
+	padding: 8px 10px;
+	border-radius: var(--notion-radius);
+	cursor: pointer;
+	font-weight: 600;
+}
+summary:hover {
+	background: var(--notion-surface-hover);
+}
+details p {
+	margin: 8px 10px 0 28px;
+	color: var(--notion-text-soft);
+}
+
+pre,
+code {
+	font-family: ui-monospace, "iA Writer Mono", Nitti, Menlo, Courier, monospace;
+}
+pre {
+	margin: 16px 0;
+	padding: 14px 16px;
+	overflow-x: auto;
+	border: 1px solid var(--notion-border-soft);
+	border-radius: 10px;
+	background: var(--notion-gray-bg);
+	font-size: 13px;
+	line-height: 1.55;
+}
+code {
+	font-size: 0.9em;
+	padding: 2px 5px;
+	border-radius: 4px;
+	background: var(--notion-gray-bg);
+}
+pre code {
+	font-size: inherit;
+	padding: 0;
+	border-radius: 0;
+	background: none;
+}
+
+main {
+	max-width: var(--notion-page-width);
+	margin: 0 auto;
+	padding: 76px 24px 88px;
+}
+
+section {
+	margin-top: 44px;
+}
+section:first-child {
+	margin-top: 0;
+}
+
+/* -- Page shell ------------------------------------------- */
+.notion-shell {
+	max-width: var(--notion-page-width);
+	margin: 0 auto;
+	padding: 76px 24px 88px;
+}
+
+/* -- Tiny utilities --------------------------------------- */
+.notion-lede {
+	max-width: 720px;
+	margin: 0 0 24px;
+	color: var(--notion-text-soft);
+	font-size: 20px;
+}
+.notion-muted {
+	color: var(--notion-text-soft);
+}
+.notion-faint {
+	color: var(--notion-text-faint);
+}
+.notion-divider {
+	height: 1px;
+	margin: 34px 0;
+	background: var(--notion-border-soft);
+}
+.notion-eyebrow {
+	display: inline-block;
+	font-size: 12px;
+	font-weight: 600;
+	letter-spacing: 0.0078125rem;
+	text-transform: uppercase;
+	color: var(--notion-blue);
+}
+
+/* -- Footer ----------------------------------------------- */
+.notion-footer {
+	margin-top: 52px;
+	padding-top: 18px;
+	border-top: 1px solid var(--notion-border-soft);
+	color: var(--notion-text-faint);
+	font-size: 13px;
+}
+
+/* -- Accessibility & motion ------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+	}
+}
+
+/* -- Responsive: 560px (base elements) -------------------- */
+@media (max-width: 560px) {
+	main,
+	.notion-shell {
+		padding-inline: 16px;
+	}
+	table {
+		display: block;
+		overflow-x: auto;
+	}
+}
+
+/*
+ * callout — Highlighted info box with icon and text.
+ * Options: data-tone="blue" | "green" | "orange" | "red" (default: yellow)
+ *
+ * HTML:
+ * <div class="notion-callout" data-tone="blue">
+ *   <div>💡</div>
+ *   <div><strong>Note</strong><p>Helpful context.</p></div>
+ * </div>
+ */
+
+.notion-callout {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	gap: 14px;
+	margin: 18px 0;
+	padding: 16px 18px;
+	border-radius: var(--notion-radius);
+	background: var(--notion-yellow-bg);
+	box-shadow: inset 0 0 0 1px var(--notion-border-soft);
+}
+.notion-callout[data-tone="blue"] {
+	background: var(--notion-blue-bg);
+}
+.notion-callout[data-tone="green"] {
+	background: var(--notion-green-bg);
+}
+.notion-callout[data-tone="orange"] {
+	background: var(--notion-orange-bg);
+}
+.notion-callout[data-tone="red"] {
+	background: var(--notion-red-bg);
+}
+.notion-callout strong {
+	display: block;
+	margin-bottom: 3px;
+}
+.notion-callout p {
+	margin: 0;
+	color: var(--notion-text-soft);
+}
+
+/*
+ * button — Styled link/button with variant and size options.
+ * Options: data-variant="primary"|"secondary"|"tertiary"
+ *          data-size="small"|"large"
+ *
+ * HTML:
+ * <a class="notion-button" data-variant="primary" href="#">Primary</a>
+ */
+
+.notion-button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	padding: 8px 16px;
+	font-size: 14px;
+	font-weight: 500;
+	line-height: 1.2;
+	border-radius: 8px;
+	border: 1px solid transparent;
+	cursor: pointer;
+	transition:
+		background 150ms,
+		box-shadow 150ms,
+		border-color 150ms;
+	text-decoration: none;
+	font-family: inherit;
+	white-space: nowrap;
+}
+.notion-button:focus-visible {
+	outline: 2px solid var(--notion-blue);
+	outline-offset: 2px;
+}
+/* Primary */
+.notion-button[data-variant="primary"],
+.notion-button:not([data-variant]) {
+	background: var(--notion-blue);
+	color: #ffffff;
+	border-color: transparent;
+}
+.notion-button[data-variant="primary"]:hover,
+.notion-button:not([data-variant]):hover {
+	background: color-mix(in srgb, var(--notion-blue) 82%, black);
+}
+/* Secondary */
+.notion-button[data-variant="secondary"] {
+	background: var(--notion-blue-bg);
+	color: var(--notion-blue);
+	border-color: transparent;
+}
+.notion-button[data-variant="secondary"]:hover {
+	background: color-mix(in srgb, var(--notion-blue-bg) 70%, var(--notion-blue));
+}
+/* Tertiary */
+.notion-button[data-variant="tertiary"] {
+	background: transparent;
+	color: var(--notion-text);
+	border-color: transparent;
+}
+.notion-button[data-variant="tertiary"]:hover {
+	background: var(--notion-surface-hover);
+}
+/* Small modifier */
+.notion-button[data-size="small"] {
+	padding: 4px 12px;
+	font-size: 12px;
+}
+/* Large modifier */
+.notion-button[data-size="large"] {
+	padding: 12px 24px;
+	font-size: 16px;
+}
+.notion-button-group {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-top: 24px;
+}
+
+/* -- Responsive: 820px ------------------------------------ */
+@media (max-width: 820px) {
+	.notion-button-group {
+		flex-direction: column;
+	}
+	.notion-button-group .notion-button {
+		width: 100%;
+	}
+}
+
+/* ===== Quiz page styling & animation ===== */
+body{position:relative;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:radial-gradient(40rem 40rem at 10% -10%, var(--accent-soft), transparent 60%),
+             radial-gradient(36rem 36rem at 100% 0%, var(--accent-soft2), transparent 60%),
+             radial-gradient(40rem 40rem at 90% 100%, var(--accent-soft), transparent 60%);
+  animation:floatbg 18s ease-in-out infinite alternate}
+@keyframes floatbg{0%{transform:translateY(0)}100%{transform:translateY(-24px)}}
+
+.progress-bar{position:fixed;top:0;left:0;height:4px;width:0%;z-index:60;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));box-shadow:0 0 12px var(--accent)}
+
+/* Sticky stats header */
+.qhead{position:sticky;top:0;z-index:50;margin:-76px -24px 24px;padding:14px 24px;
+  background:color-mix(in srgb,var(--notion-surface) 86%,transparent);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--notion-border-soft);display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.qhead .pill{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:700;padding:6px 13px;border-radius:999px;
+  background:var(--notion-gray-bg);border:1px solid var(--notion-border-soft)}
+.qhead .pill b{color:var(--accent);font-variant-numeric:tabular-nums}
+.qhead .grow{flex:1}
+.qhead .ring{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:13px;
+  background:conic-gradient(var(--accent) calc(var(--p,0)*1%),var(--notion-gray-bg) 0);color:var(--notion-text);position:relative}
+.qhead .ring::after{content:"";position:absolute;inset:5px;border-radius:50%;background:var(--notion-surface)}
+.qhead .ring span{position:relative;z-index:1}
+
+.topbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
+.crumb{text-decoration:none;font-size:13px;font-weight:650;color:var(--notion-text-soft);padding:6px 12px;border-radius:999px;
+  border:1px solid var(--notion-border-soft);transition:all .15s}
+.crumb:hover{background:var(--notion-surface-hover);color:var(--notion-text);transform:translateY(-1px)}
+.crumb.home{background:var(--accent);color:#fff;border-color:transparent}
+
+.q-hero{padding:26px;border-radius:18px;color:#fff;margin-bottom:10px;position:relative;overflow:hidden;
+  background:linear-gradient(120deg,var(--accent),var(--accent2));box-shadow:var(--notion-shadow)}
+.q-hero h1{margin:0;font-size:clamp(28px,5vw,42px);color:#fff}
+.q-hero p{margin:8px 0 0;color:rgba(255,255,255,.9);font-size:16px}
+.q-hero .big{position:absolute;right:-10px;top:-20px;font-size:120px;opacity:.18}
+
+/* Question cards */
+#quiz{display:grid;gap:14px;margin-top:22px}
+.qc{padding:18px 20px;border:1px solid var(--notion-border-soft);border-radius:14px;background:var(--notion-surface);
+  box-shadow:var(--notion-shadow);opacity:0;transform:translateY(20px);transition:opacity .5s,transform .5s}
+.qc.in{opacity:1;transform:none}
+.qc .num{font-size:12px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--accent)}
+.qc .qt{font-weight:700;margin:4px 0 12px;font-size:16px;line-height:1.4}
+.qc .opt{display:flex;align-items:center;gap:10px;width:100%;text-align:left;margin:7px 0;padding:11px 14px;border-radius:10px;
+  border:1px solid var(--notion-border);background:var(--notion-bg-soft);color:var(--notion-text);font-size:14.5px;font-weight:500;
+  cursor:pointer;transition:all .14s;font-family:inherit}
+.qc .opt .key{width:24px;height:24px;flex-shrink:0;border-radius:6px;display:grid;place-items:center;font-size:12px;font-weight:800;
+  background:var(--notion-surface);border:1px solid var(--notion-border-soft);color:var(--notion-text-soft)}
+.qc .opt:hover:not(:disabled){border-color:var(--accent);background:var(--notion-surface-hover);transform:translateX(2px)}
+.qc .opt.correct{background:var(--notion-green-bg);border-color:#3aa76d}
+.qc .opt.correct .key{background:#3aa76d;color:#fff;border-color:transparent}
+.qc .opt.wrong{background:var(--notion-red-bg);border-color:var(--notion-red)}
+.qc .opt.wrong .key{background:var(--notion-red);color:#fff;border-color:transparent}
+.qc .opt:disabled{cursor:default}
+.qc .exp{margin:10px 0 0;font-size:13.5px;color:var(--notion-text-soft);background:var(--notion-gray-bg);padding:10px 12px;
+  border-radius:8px;border-left:3px solid var(--accent);display:none}
+.qc .exp.show{display:block;animation:fade .35s}
+@keyframes fade{from{opacity:0;transform:translateY(-4px)}to{opacity:1}}
+
+.controls{display:flex;gap:10px;flex-wrap:wrap;margin:24px 0 10px}
+
+/* Final score banner */
+.result{margin-top:26px;padding:28px;border-radius:18px;text-align:center;display:none;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:var(--notion-shadow)}
+.result.show{display:block;animation:pop .5s}
+@keyframes pop{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:none}}
+.result .score{font-size:54px;font-weight:800;line-height:1;margin:6px 0}
+.result .emoji{font-size:50px}
+.result p{color:rgba(255,255,255,.92);margin:8px 0 0}
+.nextnav{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+.nextnav a{background:rgba(255,255,255,.2);color:#fff;text-decoration:none;padding:9px 16px;border-radius:999px;font-weight:650;font-size:14px}
+.nextnav a:hover{background:rgba(255,255,255,.32)}
+
+</style>
+</head>
+<body>
+<div class="progress-bar" id="prog"></div>
+<main class="notion-shell">
+  <div class="qhead">
+    <span class="pill">✅ Score <b id="score">0</b></span>
+    <span class="pill">📝 Answered <b id="answered">0</b>/<span id="total">50</span></span>
+    <span class="grow"></span>
+    <div class="ring" id="ring" style="--p:0"><span>0%</span></div>
+  </div>
+
+  <div class="topbar">
+    <a class="crumb home" href="Study Guide.html">🏠 Summary</a>
+    <a class="crumb" href="Quiz - Chapter 4.html">⚡ Ch4</a>
+    <a class="crumb" href="Quiz - Chapter 6.html">📊 Ch6</a>
+    <a class="crumb" href="Quiz - Chapter 7.html">🔔 Ch7</a>
+    <a class="crumb" href="Quiz - Chapter 8.html">🚀 Ch8</a>
+  </div>
+
+  <div class="q-hero">
+    <span class="big">🔔</span>
+    <h1>Chapter 7 — Interrupts (AVR)</h1>
+    <p>50 questions on polling vs interrupts, ISR/IVT & AVR registers.</p>
+  </div>
+
+  <div class="notion-callout" data-tone="blue">
+    <div>🎯</div>
+    <div><strong>How it works</strong><p>Click an answer to lock it in. Correct answers turn green, mistakes show the right one, and each question explains itself. Your live score is up top. Finish all 50 to get graded!</p></div>
+  </div>
+
+  <div id="quiz"></div>
+
+  <div class="controls">
+    <button id="reset" type="button">🔄 Reset quiz</button>
+    <a class="notion-button" data-variant="secondary" href="Study Guide.html">← Back to summary</a>
+  </div>
+
+  <div class="result" id="result">
+    <div class="emoji">🏆</div>
+    <div class="score">0 / 50</div>
+    <p class="msg"></p>
+    <div class="nextnav">
+      <a href="Study Guide.html">🏠 Summary</a>
+      <a href="Quiz - Chapter 4.html">⚡ Ch4</a>
+      <a href="Quiz - Chapter 6.html">📊 Ch6</a>
+      <a href="Quiz - Chapter 7.html">🔔 Ch7</a>
+      <a href="Quiz - Chapter 8.html">🚀 Ch8</a>
+    </div>
+  </div>
+
+  <p class="notion-footer">Chapter 7 — Interrupts (AVR) · 50 practice questions · Part of your animated study kit.</p>
+</main>
+<script>
+window.QUIZ={title:"Chapter 7 — Interrupts (AVR)",questions:[
+{q:"In polling, the CPU must:",o:["Continually check each device's status","Wait for a signal from the device","Ignore all devices","Run only one program"],a:0,e:"Polling means the CPU repeatedly checks device status itself."},
+{q:"With interrupts, the device:",o:["Sends a signal to the CPU when it needs attention","Is checked constantly by the CPU","Never communicates","Runs the main program"],a:0,e:"The device interrupts the CPU only when needed."},
+{q:"In response to an interrupt, the CPU executes:",o:["An Interrupt Service Routine (ISR)","The boot loader","A polling loop","The main() forever"],a:0,e:"The ISR handles the interrupting event."},
+{q:"After finishing the ISR, the CPU:",o:["Resumes normal program execution","Restarts from zero","Halts permanently","Clears all memory"],a:0,e:"It returns to where it left off using the saved PC."},
+{q:"A major drawback of polling is that it:",o:["Ties down the CPU checking devices","Uses interrupts","Has priorities","Saves power"],a:0,e:"Constant checking wastes CPU time."},
+{q:"A key advantage of interrupts is:",o:["Efficient use of the CPU","Constant device checking","No need for ISRs","Slower response"],a:0,e:"The CPU works on other tasks until interrupted."},
+{q:"Interrupts can be assigned:",o:["Priorities","No order at all","Only one per chip","Random ISRs"],a:0,e:"Interrupts have priority levels to resolve conflicts."},
+{q:"Interrupts can be 'masked', meaning they can be:",o:["Enabled or disabled","Only enabled","Only deleted","Renamed"],a:0,e:"Masking lets you enable/disable interrupts as needed."},
+{q:"The first step in servicing an interrupt is to:",o:["Stop fetching instructions and save the PC","Execute the ISR immediately","Clear the registers","Reset the chip"],a:0,e:"The CPU saves the return address (PC) first."},
+{q:"To locate the correct ISR, the CPU uses:",o:["The Interrupt Vector Table (IVT)","The stack pointer only","The ALU","The PORT registers"],a:0,e:"The IVT maps each interrupt to its ISR address."},
+{q:"ISR stands for:",o:["Interrupt Service Routine","Internal System Register","Instruction Set Reference","Input Signal Range"],a:0,e:"The ISR is the routine that runs when an interrupt occurs."},
+{q:"IVT stands for:",o:["Interrupt Vector Table","Internal Variable Type","Input Voltage Threshold","Instruction Validation Test"],a:0,e:"The IVT stores the address of each ISR."},
+{q:"The Interrupt Vector Table stores:",o:["The address of each ISR","The CPU temperature","The clock speed","The program output"],a:0,e:"It holds vector addresses pointing to each handler."},
+{q:"Which is a valid source of interrupts?",o:["Timers","The compiler","The IVT","The stack"],a:0,e:"Sources include switches, timers, serial, PWM, and ADC."},
+{q:"A lower interrupt vector number means:",o:["Higher priority","Lower priority","No priority","It is disabled"],a:0,e:"Lower vector number = higher priority."},
+{q:"Between INT0 and INT1, which has higher priority?",o:["INT0","INT1","They are equal","Neither"],a:0,e:"INT0 has a lower vector number, so higher priority."},
+{q:"The global interrupt enable bit is:",o:["Bit 7 (I) in the SREG register","Bit 0 of PORTB","Bit 3 of MCUCR","Bit 1 of GICR"],a:0,e:"The I-bit (bit 7) of SREG globally enables interrupts."},
+{q:"On reset, interrupts are:",o:["Disabled (I = 0)","All enabled","Randomly set","Locked on"],a:0,e:"The I-bit is cleared on reset, disabling interrupts."},
+{q:"Besides the global enable, each interrupt must also be:",o:["Enabled individually","Disabled individually","Deleted","Polled"],a:0,e:"You enable each specific interrupt's enable bit too."},
+{q:"The interrupt FLAG bit indicates that:",o:["The interrupt event has occurred","The CPU is off","The clock stopped","Memory is full"],a:0,e:"The flag is set when the interrupt condition happens."},
+{q:"The interrupt ENABLE bit:",o:["Allows that interrupt to be generated","Saves the PC","Sets the priority number","Resets the chip"],a:0,e:"It must be set for the interrupt to trigger."},
+{q:"By default (before setup), interrupts are:",o:["Not enabled","Always enabled","Masked off permanently","Set to high priority"],a:0,e:"You must explicitly enable interrupts."},
+{q:"When an ISR begins, the global interrupt enable bit is:",o:["Automatically cleared (0)","Set to 1","Left unchanged","Deleted"],a:0,e:"Hardware auto-disables further interrupts during the ISR."},
+{q:"The global enable is restored when:",o:["Returning from the ISR","The chip resets","PORTB changes","Never"],a:0,e:"Returning from the ISR re-enables interrupts."},
+{q:"Programming step 1 for AVR interrupts is to:",o:["Include <avr/interrupt.h>","Call sei() first","Write the main loop","Set PORTB"],a:0,e:"Include the interrupt header first."},
+{q:"Which macro is used to define an interrupt handler?",o:["ISR()","MAIN()","INT()","VECT()"],a:0,e:"ISR(vector_name) defines the handler."},
+{q:"The function sei() is used to:",o:["Globally enable interrupts","Disable interrupts","Reset the CPU","Clear PORTB"],a:0,e:"sei() sets the I-bit, enabling interrupts globally."},
+{q:"Which register specifies the trigger condition for external interrupts?",o:["MCUCR","PORTB","DDRB","SREG"],a:0,e:"MCUCR controls the sense (edge/level) of INT0/INT1."},
+{q:"Which register enables an external interrupt like INT1?",o:["GICR","MCUCR","SPL","TCNT0"],a:0,e:"GICR holds the external interrupt enable bits."},
+{q:"Which line enables INT1?",o:["GICR |= (1<<INT1);","MCUCR = 0;","DDRB = 0xFF;","PORTB = 1;"],a:0,e:"Setting the INT1 bit in GICR enables it."},
+{q:"Pin INT1 is located on:",o:["PD.3","PD.2","PB.5","PC.0"],a:0,e:"INT1 is on port D pin 3 (PD3)."},
+{q:"Pin INT0 is located on:",o:["PD.2","PD.3","PB.0","PA.7"],a:0,e:"INT0 is on port D pin 2 (PD2)."},
+{q:"By default, external interrupts are triggered by a:",o:["Low level on the pin","Rising edge","Falling edge","Clock tick"],a:0,e:"Low-level sensing is the default trigger."},
+{q:"An edge-triggered interrupt activates on:",o:["A change in the signal level","A constant level","A timer overflow only","A reset"],a:0,e:"Edge triggering responds to a rising/falling transition."},
+{q:"A level-triggered interrupt activates when:",o:["The signal holds a specific value (e.g., low)","The signal changes","The timer overflows","The CPU resets"],a:0,e:"Level triggering responds while the level is present."},
+{q:"In Example 2, ISR(INT0_vect) executes:",o:["PORTB ^= (1<<5); to toggle PB5","DDRB = 0;","sei();","a reset"],a:0,e:"It toggles bit 5 of PORTB on each INT0."},
+{q:"The statement PORTB ^= (1<<5); does what?",o:["Toggles pin PB5","Sets PB5 high permanently","Clears all of PORTB","Reads PB5"],a:0,e:"XOR with bit 5 flips that single pin."},
+{q:"To make PB5 an output, you write:",o:["DDRB = (1<<5);","PORTB = (1<<5);","MCUCR = 0x2;","GICR = 0;"],a:0,e:"Setting the DDRB bit configures the pin as output."},
+{q:"In Example 3 (7-segment counter), the ISR:",o:["Increments a count variable and outputs it","Resets the chip","Disables interrupts","Reads the ADC"],a:0,e:"Each interrupt increments the displayed count."},
+{q:"In Example 3, the 7-segment display connects to:",o:["PB0–PB3 (DDRB = 0x0F)","PD0–PD3","PC4–PC7","PA0–PA7"],a:0,e:"DDRB = 0x0F sets the lower 4 PORTB pins as outputs."},
+{q:"In Example 3, the count typically wraps back to 0 after reaching:",o:["9 (then resets at 10)","5","15","255"],a:0,e:"A single-digit display counts 0–9 then resets."},
+{q:"What does include <avr/interrupt.h> provide?",o:["Interrupt macros like ISR() and sei()","Math functions","String functions","The main() function"],a:0,e:"It supplies the AVR interrupt API."},
+{q:"If two interrupts occur simultaneously, the one serviced first is the one with:",o:["Higher priority (lower vector number)","The larger vector number","The longer ISR","A disabled flag"],a:0,e:"Priority order is set by vector number."},
+{q:"Each interrupt source generally has bits for:",o:["Enable, Flag, and Priority","Only Enable","Only Flag","Only Priority"],a:0,e:"Typically an enable bit, a flag bit, and priority handling."},
+{q:"MCUCR = 0x2; configures INT0 to be:",o:["Falling-edge triggered","Low-level triggered","Rising-edge triggered","Disabled"],a:0,e:"The sense-control bits in MCUCR select falling edge."},
+{q:"The fifth/last programming step is usually to:",o:["Call sei() to enable interrupts globally","Include the header","Write the ISR","Set DDRB"],a:0,e:"sei() comes after configuration to turn interrupts on."},
+{q:"Interrupt-driven I/O is preferred over polling because it:",o:["Frees the CPU for other work","Uses more CPU time","Removes priorities","Needs no ISR"],a:0,e:"The CPU isn't stuck checking devices."},
+{q:"ISR(INT0_vect) is the handler for:",o:["External interrupt 0","Timer 0 overflow","The ADC","The UART"],a:0,e:"INT0_vect names the external interrupt 0 vector."},
+{q:"The main() loop in these interrupt examples typically:",o:["Runs an empty while(1) waiting for interrupts","Does all the work itself","Polls the device","Resets the chip repeatedly"],a:0,e:"Work happens in the ISR; main just waits in while(1)."},
+{q:"After saving the PC and running the ISR, the CPU resumes by:",o:["Retrieving the saved PC value","Jumping to address 0","Clearing SREG","Reloading the program"],a:0,e:"The saved PC lets execution continue where it stopped."}
+]};
+
+</script>
+<script>
+(function(){
+  const Q=window.QUIZ.questions;
+  const root=document.getElementById('quiz');
+  let answered=0, score=0;
+  const KEYS=['A','B','C','D','E','F'];
+
+  // shuffle helper
+  function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+  Q.forEach((item,qi)=>{
+    // build option list keeping track of correct text
+    const correctText=item.o[item.a];
+    const opts=shuffle(item.o.map((t,i)=>({t,correct:i===item.a})));
+    const card=document.createElement('div');card.className='qc';
+    let html='<div class="num">Question '+(qi+1)+' / '+Q.length+'</div><p class="qt">'+item.q+'</p>';
+    opts.forEach((o,oi)=>{html+='<button class="opt" data-correct="'+(o.correct?1:0)+'"><span class="key">'+KEYS[oi]+'</span><span>'+o.t+'</span></button>';});
+    html+='<p class="exp">'+(item.e||'')+'</p>';
+    card.innerHTML=html;
+    root.appendChild(card);
+
+    const exp=card.querySelector('.exp');
+    card.querySelectorAll('.opt').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        if(card.dataset.done)return;
+        card.dataset.done='1';answered++;
+        const ok=btn.dataset.correct==='1';
+        if(ok){btn.classList.add('correct');score++;}
+        else{btn.classList.add('wrong');
+          card.querySelectorAll('.opt').forEach(b=>{if(b.dataset.correct==='1')b.classList.add('correct');});}
+        card.querySelectorAll('.opt').forEach(b=>b.disabled=true);
+        exp.classList.add('show');
+        update();
+      });
+    });
+  });
+
+  const totalEl=document.getElementById('total');if(totalEl)totalEl.textContent=Q.length;
+
+  function update(){
+    document.getElementById('answered').textContent=answered;
+    document.getElementById('score').textContent=score;
+    const pct=Math.round(answered/Q.length*100);
+    const ring=document.getElementById('ring');ring.style.setProperty('--p',pct);
+    ring.querySelector('span').textContent=pct+'%';
+    if(answered===Q.length)showResult();
+  }
+
+  function showResult(){
+    const pct=Math.round(score/Q.length*100);
+    const r=document.getElementById('result');
+    let emoji='🌱',msg='Keep reviewing — you\'ve got this!';
+    if(pct>=90){emoji='🏆';msg='Outstanding! You\'ve mastered this chapter.';}
+    else if(pct>=75){emoji='🎉';msg='Great job! Just polish a few weak spots.';}
+    else if(pct>=50){emoji='👍';msg='Good start — revisit the tricky ones.';}
+    r.querySelector('.emoji').textContent=emoji;
+    r.querySelector('.score').textContent=score+' / '+Q.length+' ('+pct+'%)';
+    r.querySelector('.msg').textContent=msg;
+    r.classList.add('show');
+    r.scrollIntoView({behavior:'smooth',block:'center'});
+  }
+
+  document.getElementById('reset').addEventListener('click',()=>location.reload());
+
+  // reveal on scroll
+  const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.08});
+  document.querySelectorAll('.qc').forEach(el=>io.observe(el));
+
+  // progress bar
+  const prog=document.getElementById('prog');
+  addEventListener('scroll',()=>{const h=document.documentElement;prog.style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight)*100)+'%';},{passive:true});
+})();
+
+</script>
+</body>
+</html>
