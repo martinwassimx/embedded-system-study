@@ -1,0 +1,1620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Study Guide — Architecture & Systems</title>
+<style>
+/*
+ * _base.css — Global design tokens, element defaults, page shell, and tiny utilities.
+ * ALWAYS included in every page.
+ *
+ * Provides:
+ *   :root variables (light + dark), box-sizing, html/body,
+ *   element defaults (button, input, select, textarea, label, fieldset, legend,
+ *   a, hr, img, h1-h4, p, ul/ol/li, blockquote, table/th/td, details/summary,
+ *   pre/code), main / .notion-shell, utility classes, .notion-footer,
+ *   reduced-motion and responsive breakpoints for base elements.
+ */
+
+:root {
+	color-scheme: light dark;
+	--notion-bg: #ffffff;
+	--notion-bg-soft: #f9f9f8;
+	--notion-surface: #ffffff;
+	--notion-surface-hover: #f6f5f4;
+	--notion-text: #191918;
+	--notion-text-soft: rgba(0, 0, 0, 0.54);
+	--notion-text-faint: rgba(0, 0, 0, 0.3);
+	--notion-border: rgba(0, 0, 0, 0.1);
+	--notion-border-soft: rgba(0, 0, 0, 0.05);
+	--notion-shadow:
+		0px 0.7px 1.462px rgba(0, 0, 0, 0.015), 0px 3px 9px rgba(0, 0, 0, 0.03);
+	--notion-blue: #2783de;
+	--notion-orange: #d5803b;
+	--notion-red: #e56458;
+	--notion-blue-bg: #f3f9fd;
+	--notion-yellow-bg: #fcfaef;
+	--notion-orange-bg: #fcf7f4;
+	--notion-green-bg: #f6f9f7;
+	--notion-red-bg: #fdf6f6;
+	--notion-gray-bg: #f9f8f7;
+	--notion-radius: 8px;
+	--notion-page-width: 900px;
+	--notion-chart-1: #5e9fe8;
+	--notion-chart-2: #eac26b;
+	--notion-chart-3: #72bc8f;
+	--notion-chart-4: #bf8eda;
+	--notion-chart-5: #de9255;
+	--notion-chart-6: #df84a8;
+	--notion-chart-7: #4fb9c9;
+	--notion-chart-8: #e97366;
+	--diff-add: #47c1b6;
+	--diff-del: #f07070;
+	--pr-approved: #2b8a3e;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--notion-bg: #000000;
+		--notion-bg-soft: #191918;
+		--notion-surface: #191918;
+		--notion-surface-hover: #31302e;
+		--notion-text: #ffffff;
+		--notion-text-soft: rgba(255, 255, 255, 0.5);
+		--notion-text-faint: rgba(255, 255, 255, 0.3);
+		--notion-border: rgba(255, 255, 255, 0.2);
+		--notion-border-soft: rgba(255, 255, 255, 0.1);
+		--notion-shadow:
+			0px 0.7px 1.462px rgba(0, 0, 0, 0.06), 0px 3px 9px rgba(0, 0, 0, 0.12);
+		--notion-blue: #5e9fe8;
+		--notion-orange: #de9255;
+		--notion-red: #e97366;
+		--notion-blue-bg: rgba(41, 139, 253, 0.061);
+		--notion-yellow-bg: rgba(203, 145, 47, 0.08);
+		--notion-orange-bg: rgba(246, 126, 35, 0.08);
+		--notion-green-bg: rgba(42, 157, 118, 0.08);
+		--notion-red-bg: rgba(246, 73, 50, 0.08);
+		--notion-gray-bg: #31302e;
+		--diff-add: #5dd8cb;
+		--diff-del: #ff8a80;
+		--pr-approved: #69db7c;
+	}
+}
+
+* {
+	box-sizing: border-box;
+}
+html {
+	scroll-behavior: smooth;
+}
+body {
+	margin: 0;
+	background: var(--notion-bg);
+	color: var(--notion-text);
+	font-family:
+		ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica,
+		"Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol";
+	font-size: 16px;
+	line-height: 1.5;
+	transition:
+		background 180ms ease,
+		color 180ms ease;
+}
+
+/* -- Base element defaults -------------------------------- */
+button,
+[type="button"],
+[type="submit"],
+[type="reset"] {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	padding: 8px 16px;
+	font: inherit;
+	font-size: 14px;
+	font-weight: 500;
+	line-height: 1.2;
+	color: #ffffff;
+	background: var(--notion-blue);
+	border: 1px solid transparent;
+	border-radius: 8px;
+	cursor: pointer;
+	transition: background 150ms;
+	white-space: nowrap;
+}
+button:hover,
+[type="button"]:hover,
+[type="submit"]:hover,
+[type="reset"]:hover {
+	background: color-mix(in srgb, var(--notion-blue) 82%, black);
+}
+button:focus-visible,
+[type="button"]:focus-visible,
+[type="submit"]:focus-visible,
+[type="reset"]:focus-visible {
+	outline: 2px solid var(--notion-blue);
+	outline-offset: 2px;
+}
+
+input,
+select,
+textarea {
+	font: inherit;
+	font-size: 14px;
+	line-height: 1.4;
+	color: var(--notion-text);
+	background: var(--notion-surface);
+	border: 1px solid var(--notion-border);
+	border-radius: 8px;
+	padding: 8px 12px;
+	transition: border-color 150ms;
+}
+input:focus,
+select:focus,
+textarea:focus {
+	outline: none;
+	border-color: var(--notion-blue);
+	box-shadow: 0 0 0 2px rgba(9, 127, 232, 0.15);
+}
+input::placeholder,
+textarea::placeholder {
+	color: var(--notion-text-faint);
+}
+select {
+	appearance: none;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 4.5L6 7.5L9 4.5' fill='none' stroke='%23999' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+	background-repeat: no-repeat;
+	background-position: right 10px center;
+	padding-right: 30px;
+}
+textarea {
+	resize: vertical;
+	min-height: 80px;
+}
+input[type="range"] {
+	border: none;
+	padding: 0;
+	background: transparent;
+	accent-color: var(--notion-blue);
+	height: 18px;
+	cursor: pointer;
+	box-shadow: none;
+}
+input[type="range"]:focus {
+	box-shadow: none;
+}
+input[type="checkbox"],
+input[type="radio"] {
+	width: 16px;
+	height: 16px;
+	accent-color: var(--notion-blue);
+	border: 1px solid var(--notion-border);
+	padding: 0;
+	cursor: pointer;
+}
+label {
+	display: block;
+	font-size: 14px;
+	font-weight: 600;
+	color: var(--notion-text);
+	margin-bottom: 6px;
+}
+fieldset {
+	border: 1px solid var(--notion-border-soft);
+	border-radius: 10px;
+	padding: 16px;
+	margin: 0;
+}
+legend {
+	font-weight: 600;
+	padding: 0 4px;
+}
+
+a {
+	color: var(--notion-text);
+	text-decoration: underline;
+	text-underline-offset: 2px;
+	text-decoration-color: var(--notion-border);
+}
+a:hover {
+	text-decoration-color: var(--notion-text);
+}
+
+hr {
+	height: 1px;
+	margin: 34px 0;
+	border: none;
+	background: var(--notion-border-soft);
+}
+
+img {
+	max-width: 100%;
+	height: auto;
+	border-radius: 8px;
+}
+
+h1,
+h2,
+h3,
+h4 {
+	text-wrap: balance;
+}
+h1 {
+	margin: 0 0 14px;
+	font-size: clamp(42px, 7vw, 72px);
+	line-height: 1.1;
+	letter-spacing: -0.035em;
+	font-weight: 700;
+}
+h2 {
+	margin: 44px 0 10px;
+	font-size: 32px;
+	line-height: 1.25;
+	letter-spacing: -0.025em;
+}
+h3 {
+	margin: 0 0 6px;
+	font-size: 18px;
+	line-height: 1.556;
+	letter-spacing: -0.007em;
+}
+p {
+	margin: 0 0 10px;
+}
+
+ul,
+ol {
+	margin: 8px 0 16px;
+	padding-left: 24px;
+}
+li {
+	margin-bottom: 4px;
+}
+li::marker {
+	color: var(--notion-text-faint);
+}
+
+blockquote {
+	border-left: 3px solid var(--notion-text);
+	padding: 4px 0 4px 16px;
+	margin: 24px 0;
+}
+blockquote p {
+	font-size: 18px;
+	line-height: 1.5;
+	margin: 0;
+}
+
+table {
+	width: 100%;
+	margin: 14px 0;
+	border-collapse: separate;
+	border-spacing: 0;
+	border: 1px solid var(--notion-border-soft);
+	border-radius: 10px;
+	overflow: hidden;
+	background: var(--notion-surface);
+	font-size: 14px;
+}
+th,
+td {
+	padding: 12px 14px;
+	vertical-align: top;
+	text-align: left;
+	border-right: 1px solid var(--notion-border-soft);
+	border-bottom: 1px solid var(--notion-border-soft);
+}
+th:last-child,
+td:last-child {
+	border-right: 0;
+}
+tr:last-child td {
+	border-bottom: 0;
+}
+th {
+	background: var(--notion-bg-soft);
+	color: var(--notion-text-soft);
+	font-weight: 600;
+}
+
+details {
+	margin: 16px 0;
+	border-radius: var(--notion-radius);
+}
+summary {
+	padding: 8px 10px;
+	border-radius: var(--notion-radius);
+	cursor: pointer;
+	font-weight: 600;
+}
+summary:hover {
+	background: var(--notion-surface-hover);
+}
+details p {
+	margin: 8px 10px 0 28px;
+	color: var(--notion-text-soft);
+}
+
+pre,
+code {
+	font-family: ui-monospace, "iA Writer Mono", Nitti, Menlo, Courier, monospace;
+}
+pre {
+	margin: 16px 0;
+	padding: 14px 16px;
+	overflow-x: auto;
+	border: 1px solid var(--notion-border-soft);
+	border-radius: 10px;
+	background: var(--notion-gray-bg);
+	font-size: 13px;
+	line-height: 1.55;
+}
+code {
+	font-size: 0.9em;
+	padding: 2px 5px;
+	border-radius: 4px;
+	background: var(--notion-gray-bg);
+}
+pre code {
+	font-size: inherit;
+	padding: 0;
+	border-radius: 0;
+	background: none;
+}
+
+main {
+	max-width: var(--notion-page-width);
+	margin: 0 auto;
+	padding: 76px 24px 88px;
+}
+
+section {
+	margin-top: 44px;
+}
+section:first-child {
+	margin-top: 0;
+}
+
+/* -- Page shell ------------------------------------------- */
+.notion-shell {
+	max-width: var(--notion-page-width);
+	margin: 0 auto;
+	padding: 76px 24px 88px;
+}
+
+/* -- Tiny utilities --------------------------------------- */
+.notion-lede {
+	max-width: 720px;
+	margin: 0 0 24px;
+	color: var(--notion-text-soft);
+	font-size: 20px;
+}
+.notion-muted {
+	color: var(--notion-text-soft);
+}
+.notion-faint {
+	color: var(--notion-text-faint);
+}
+.notion-divider {
+	height: 1px;
+	margin: 34px 0;
+	background: var(--notion-border-soft);
+}
+.notion-eyebrow {
+	display: inline-block;
+	font-size: 12px;
+	font-weight: 600;
+	letter-spacing: 0.0078125rem;
+	text-transform: uppercase;
+	color: var(--notion-blue);
+}
+
+/* -- Footer ----------------------------------------------- */
+.notion-footer {
+	margin-top: 52px;
+	padding-top: 18px;
+	border-top: 1px solid var(--notion-border-soft);
+	color: var(--notion-text-faint);
+	font-size: 13px;
+}
+
+/* -- Accessibility & motion ------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+	}
+}
+
+/* -- Responsive: 560px (base elements) -------------------- */
+@media (max-width: 560px) {
+	main,
+	.notion-shell {
+		padding-inline: 16px;
+	}
+	table {
+		display: block;
+		overflow-x: auto;
+	}
+}
+/*
+ * hero — Full-width hero section with title, subtitle, and optional eyebrow.
+ *
+ * HTML:
+ * <section class="notion-hero">
+ *   <span class="notion-eyebrow">Category</span>
+ *   <h1>Page Title</h1>
+ *   <p>A brief description that supports the title with additional context.</p>
+ *   <div class="notion-button-group">
+ *     <a class="notion-button" data-variant="primary" href="#">Get started</a>
+ *     <a class="notion-button" data-variant="secondary" href="#">Learn more</a>
+ *   </div>
+ * </section>
+ */
+
+.notion-hero {
+	padding: 48px 0 40px;
+	max-width: var(--notion-page-width);
+}
+.notion-hero h1 {
+	font-size: clamp(42px, 7vw, 72px);
+	font-weight: 700;
+	letter-spacing: -0.04em;
+	line-height: 1.05;
+	margin: 0;
+	text-wrap: balance;
+}
+.notion-hero p {
+	font-size: 20px;
+	line-height: 1.5;
+	color: var(--notion-text-soft);
+	margin: 16px 0 0;
+	max-width: 640px;
+}
+.notion-hero .notion-eyebrow {
+	margin-bottom: 12px;
+}
+
+/* -- Responsive: 820px ------------------------------------ */
+@media (max-width: 820px) {
+	.notion-hero {
+		padding: 32px 0 24px;
+	}
+	.notion-hero h1 {
+		font-size: clamp(32px, 8vw, 48px);
+	}
+}
+/*
+ * callout — Highlighted info box with icon and text.
+ * Options: data-tone="blue" | "green" | "orange" | "red" (default: yellow)
+ *
+ * HTML:
+ * <div class="notion-callout" data-tone="blue">
+ *   <div>💡</div>
+ *   <div><strong>Note</strong><p>Helpful context.</p></div>
+ * </div>
+ */
+
+.notion-callout {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	gap: 14px;
+	margin: 18px 0;
+	padding: 16px 18px;
+	border-radius: var(--notion-radius);
+	background: var(--notion-yellow-bg);
+	box-shadow: inset 0 0 0 1px var(--notion-border-soft);
+}
+.notion-callout[data-tone="blue"] {
+	background: var(--notion-blue-bg);
+}
+.notion-callout[data-tone="green"] {
+	background: var(--notion-green-bg);
+}
+.notion-callout[data-tone="orange"] {
+	background: var(--notion-orange-bg);
+}
+.notion-callout[data-tone="red"] {
+	background: var(--notion-red-bg);
+}
+.notion-callout strong {
+	display: block;
+	margin-bottom: 3px;
+}
+.notion-callout p {
+	margin: 0;
+	color: var(--notion-text-soft);
+}
+/*
+ * card-grid — Grid of clickable cards with icon, title, and description.
+ *
+ * HTML:
+ * <section class="notion-card-grid">
+ *   <article class="notion-card">
+ *     <div class="notion-card-icon">%</div>
+ *     <h3>Card</h3>
+ *     <p>Card text.</p>
+ *   </article>
+ * </section>
+ */
+
+.notion-card-grid {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 12px;
+	margin: 20px 0 6px;
+}
+.notion-card {
+	padding: 16px;
+	border: 1px solid var(--notion-border-soft);
+	border-radius: 10px;
+	background: var(--notion-surface);
+	box-shadow: var(--notion-shadow);
+	transition:
+		transform 140ms ease,
+		background 140ms ease,
+		border-color 140ms ease;
+}
+.notion-card:hover {
+	transform: translateY(-1px);
+	background: var(--notion-surface-hover);
+	border-color: var(--notion-border);
+}
+.notion-card-icon {
+	width: 34px;
+	height: 34px;
+	display: grid;
+	place-items: center;
+	margin-bottom: 12px;
+	border-radius: 8px;
+	background: var(--notion-gray-bg);
+	font-size: 20px;
+}
+.notion-card p {
+	color: var(--notion-text-soft);
+}
+
+/* -- Responsive: 820px ------------------------------------ */
+@media (max-width: 820px) {
+	.notion-card-grid {
+		grid-template-columns: 1fr;
+	}
+}
+/*
+ * tabs — CSS-only tabbed interface using radio inputs.
+ * Options: data-style="line" | "pills" (default: pill-in-tray)
+ *
+ * HTML:
+ * <div class="notion-tabs">
+ *   <input checked type="radio" name="tabs-demo" id="tab-1">
+ *   <input type="radio" name="tabs-demo" id="tab-2">
+ *   <div class="notion-tab-list">
+ *     <label class="notion-tab-label" for="tab-1">Simple</label>
+ *     <label class="notion-tab-label" for="tab-2">Detailed</label>
+ *   </div>
+ *   <div class="notion-tab-panel" data-tab-panel="1"><p>Simple view.</p></div>
+ *   <div class="notion-tab-panel" data-tab-panel="2"><p>Detailed view.</p></div>
+ * </div>
+ */
+
+.notion-tabs {
+	margin: 18px 0;
+}
+.notion-tabs input[type="radio"] {
+	position: absolute;
+	opacity: 0;
+	pointer-events: none;
+}
+.notion-tab-list {
+	display: flex;
+	flex-wrap: wrap;
+	width: fit-content;
+	gap: 6px;
+	padding: 4px;
+	border-radius: 10px;
+	background: var(--notion-gray-bg);
+}
+.notion-tab-label {
+	padding: 6px 10px;
+	border-radius: 8px;
+	color: var(--notion-text-soft);
+	font-size: 14px;
+	font-weight: 600;
+	cursor: pointer;
+}
+.notion-tab-label:hover {
+	background: var(--notion-surface-hover);
+	color: var(--notion-text);
+}
+.notion-tab-panel {
+	display: none;
+	padding: 16px 0 0;
+}
+.notion-tabs:has(#tab-1:checked) label[for="tab-1"],
+.notion-tabs:has(#tab-2:checked) label[for="tab-2"],
+.notion-tabs:has(#tab-3:checked) label[for="tab-3"],
+.notion-tabs:has(#tab-4:checked) label[for="tab-4"] {
+	background: var(--notion-surface);
+	color: var(--notion-text);
+	box-shadow: 0 1px 2px rgba(15, 15, 15, 0.06);
+}
+
+/* Line-style tabs */
+.notion-tabs[data-style="line"] .notion-tab-list {
+	width: auto;
+	background: none;
+	padding: 0;
+	gap: 0;
+	border-radius: 0;
+	border-bottom: 1px solid var(--notion-border-soft);
+}
+.notion-tabs[data-style="line"] .notion-tab-label {
+	padding: 8px 14px;
+	border-radius: 0;
+	font-weight: 500;
+	border-bottom: 2px solid transparent;
+	margin-bottom: -1px;
+}
+.notion-tabs[data-style="line"] .notion-tab-label:hover {
+	background: none;
+	color: var(--notion-text);
+}
+.notion-tabs[data-style="line"] .notion-tab-panel {
+	padding-top: 0;
+}
+.notion-tabs[data-style="line"] .notion-tab-panel > :first-child {
+	margin-top: 0;
+	border-top: none;
+	border-top-left-radius: 0;
+	border-top-right-radius: 0;
+}
+.notion-tabs[data-style="line"]:has(#tab-1:checked) label[for="tab-1"],
+.notion-tabs[data-style="line"]:has(#tab-2:checked) label[for="tab-2"],
+.notion-tabs[data-style="line"]:has(#tab-3:checked) label[for="tab-3"],
+.notion-tabs[data-style="line"]:has(#tab-4:checked) label[for="tab-4"] {
+	background: none;
+	box-shadow: none;
+	color: var(--notion-text);
+	font-weight: 600;
+	border-bottom-color: var(--notion-text);
+}
+
+/* Pill-style tabs */
+.notion-tabs[data-style="pills"] .notion-tab-list {
+	width: auto;
+	background: none;
+	padding: 0;
+	gap: 8px;
+	border-radius: 0;
+}
+.notion-tabs[data-style="pills"] .notion-tab-label {
+	padding: 6px 16px;
+	border-radius: 999px;
+	border: 1px solid var(--notion-border);
+	font-weight: 500;
+	font-size: 14px;
+	color: var(--notion-text-soft);
+	background: var(--notion-surface);
+}
+.notion-tabs[data-style="pills"] .notion-tab-label:hover {
+	background: var(--notion-surface-hover);
+	border-color: var(--notion-text-faint);
+	color: var(--notion-text);
+}
+.notion-tabs[data-style="pills"]:has(#tab-1:checked) label[for="tab-1"],
+.notion-tabs[data-style="pills"]:has(#tab-2:checked) label[for="tab-2"],
+.notion-tabs[data-style="pills"]:has(#tab-3:checked) label[for="tab-3"],
+.notion-tabs[data-style="pills"]:has(#tab-4:checked) label[for="tab-4"] {
+	background: var(--notion-text);
+	border-color: var(--notion-text);
+	color: var(--notion-bg);
+	box-shadow: none;
+	font-weight: 600;
+}
+.notion-tabs[data-style="pills"] .notion-tab-panel {
+	padding-top: 16px;
+}
+
+/* Panel visibility */
+.notion-tabs:has(#tab-1:checked) [data-tab-panel="1"],
+.notion-tabs:has(#tab-2:checked) [data-tab-panel="2"],
+.notion-tabs:has(#tab-3:checked) [data-tab-panel="3"],
+.notion-tabs:has(#tab-4:checked) [data-tab-panel="4"] {
+	display: block;
+}
+/*
+ * flow — Horizontal step-by-step process with arrow connectors.
+ *
+ * HTML:
+ * <div class="notion-flow">
+ *   <div class="notion-flow-step">
+ *     <strong>Step</strong>
+ *     <span>Detail</span>
+ *   </div>
+ *   <div class="notion-flow-step">
+ *     <strong>Next</strong>
+ *     <span>Detail</span>
+ *   </div>
+ * </div>
+ */
+
+.notion-flow {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 10px;
+	margin: 18px 0;
+}
+.notion-flow-step {
+	position: relative;
+	padding: 14px;
+	border: 1px solid var(--notion-border-soft);
+	border-radius: 10px;
+	background: var(--notion-surface);
+}
+.notion-flow-step:not(:last-child)::after {
+	content: "\2192";
+	position: absolute;
+	right: -15px;
+	top: 50%;
+	transform: translateY(-50%);
+	z-index: 1;
+	color: var(--notion-text-faint);
+	font-weight: 700;
+}
+.notion-flow-step span {
+	display: block;
+	margin-top: 4px;
+	color: var(--notion-text-soft);
+	font-size: 14px;
+}
+
+/* -- Responsive: 820px ------------------------------------ */
+@media (max-width: 820px) {
+	.notion-flow {
+		grid-template-columns: 1fr;
+	}
+	.notion-flow-step:not(:last-child)::after {
+		content: "\2193";
+		right: 50%;
+		top: auto;
+		bottom: -19px;
+		transform: translateX(50%);
+	}
+}
+/*
+ * comparison — Side-by-side panels with optional badge labels.
+ * Options: .notion-badge data-variant="primary" | "secondary" | "blue"
+ *
+ * HTML:
+ * <div class="notion-comparison">
+ *   <div class="notion-panel">
+ *     <h3>Option A</h3>
+ *     <p>Description.</p>
+ *     <span class="notion-badge">Best for...</span>
+ *   </div>
+ *   <div class="notion-panel">
+ *     <h3>Option B</h3>
+ *     <p>Description.</p>
+ *   </div>
+ * </div>
+ */
+
+.notion-comparison {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 12px;
+	margin-top: 14px;
+}
+.notion-panel {
+	padding: 16px;
+	border-radius: 10px;
+	border: 1px solid var(--notion-border-soft);
+	background: var(--notion-surface);
+}
+.notion-panel p {
+	color: var(--notion-text-soft);
+}
+.notion-badge {
+	display: inline-flex;
+	margin-top: 12px;
+	padding: 4px 8px;
+	border-radius: 999px;
+	background: var(--notion-green-bg);
+	color: var(--notion-text);
+	font-size: 12px;
+	font-weight: 600;
+}
+.notion-badge[data-variant="primary"] {
+	background: var(--notion-blue);
+	color: #ffffff;
+}
+.notion-badge[data-variant="secondary"] {
+	background: var(--notion-gray-bg);
+	color: var(--notion-text);
+}
+.notion-badge[data-variant="blue"] {
+	background: var(--notion-blue-bg);
+	color: var(--notion-blue);
+}
+
+/* -- Responsive: 820px ------------------------------------ */
+@media (max-width: 820px) {
+	.notion-comparison {
+		grid-template-columns: 1fr;
+	}
+}
+/*
+ * glossary — Two-column grid of term/definition cards.
+ *
+ * HTML:
+ * <dl class="notion-glossary">
+ *   <div class="notion-term">
+ *     <dt>APR</dt>
+ *     <dd>Annual percentage rate, including certain fees.</dd>
+ *   </div>
+ * </dl>
+ */
+
+.notion-glossary {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 10px;
+	margin-top: 16px;
+}
+.notion-term {
+	padding: 14px;
+	border: 1px solid var(--notion-border-soft);
+	border-radius: 10px;
+	background: var(--notion-surface);
+}
+.notion-term dt {
+	margin: 0 0 4px;
+	font-weight: 750;
+}
+.notion-term dd {
+	margin: 0;
+	color: var(--notion-text-soft);
+}
+
+/* -- Responsive: 820px ------------------------------------ */
+@media (max-width: 820px) {
+	.notion-glossary {
+		grid-template-columns: 1fr;
+	}
+}
+/*
+ * code — Alias for the base <pre><code> element.
+ * No additional styles beyond _base.css defaults.
+ *
+ * HTML:
+ * <pre class="notion-code"><code>monthly = principal * r * (1 + r)^n / ((1 + r)^n - 1)</code></pre>
+ */
+
+/* .notion-code is now an alias -- bare <pre><code> is styled identically */
+/*
+ * checklist — To-do style list with check icons.
+ *
+ * HTML:
+ * <ul class="notion-checklist">
+ *   <li>
+ *     <span class="notion-check">&#x2713;</span>
+ *     <span>Compare offers using the same loan amount, term, and points.</span>
+ *   </li>
+ * </ul>
+ */
+
+.notion-checklist {
+	display: grid;
+	gap: 8px;
+	margin-top: 14px;
+	padding: 0;
+	list-style: none;
+}
+.notion-checklist li {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	gap: 10px;
+	align-items: start;
+	padding: 9px 10px;
+	border-radius: var(--notion-radius);
+}
+.notion-checklist li:hover {
+	background: var(--notion-surface-hover);
+}
+.notion-checklist > div {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	gap: 10px;
+	align-items: start;
+	padding: 9px 10px;
+	border-radius: var(--notion-radius);
+}
+.notion-checklist > div:hover {
+	background: var(--notion-surface-hover);
+}
+.notion-check {
+	width: 18px;
+	height: 18px;
+	display: grid;
+	place-items: center;
+	margin-top: 2px;
+	border-radius: 5px;
+	background: var(--notion-blue-bg);
+	color: var(--notion-blue);
+	font-size: 12px;
+	font-weight: 700;
+}
+/*
+ * list — Numbered list with index badges and descriptions.
+ *
+ * HTML:
+ * <div class="notion-list">
+ *   <div class="notion-list-item">
+ *     <div class="notion-index">1</div>
+ *     <div>
+ *       <h3>Item</h3>
+ *       <p>Item details.</p>
+ *     </div>
+ *   </div>
+ * </div>
+ */
+
+.notion-list {
+	display: grid;
+	gap: 8px;
+	margin-top: 14px;
+}
+.notion-list-item {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	gap: 12px;
+	padding: 12px 14px;
+	border-radius: var(--notion-radius);
+	background: transparent;
+	transition: background 120ms ease;
+}
+.notion-list-item:hover {
+	background: var(--notion-surface-hover);
+}
+.notion-index {
+	width: 28px;
+	height: 28px;
+	display: grid;
+	place-items: center;
+	border-radius: 6px;
+	background: var(--notion-blue-bg);
+	color: var(--notion-blue);
+	font-weight: 700;
+	font-size: 14px;
+}
+.notion-list-item p {
+	color: var(--notion-text-soft);
+}
+/*
+ * bar-chart — Horizontal bar chart with labels and values.
+ * Options: data-muted (dims a bar), data-tone="green" | "orange" | "red"
+ *
+ * HTML:
+ * <div class="notion-bar-chart">
+ *   <div class="notion-bar" style="--value: 80%">
+ *     <span class="notion-bar-label">A350-900ULR</span>
+ *     <div class="notion-bar-track">
+ *       <div class="notion-bar-fill"></div>
+ *     </div>
+ *     <span class="notion-bar-value">9,700 nm</span>
+ *   </div>
+ * </div>
+ */
+
+.notion-bar-chart {
+	display: grid;
+	gap: 12px;
+	margin-top: 16px;
+	padding: 16px;
+	border: 1px solid var(--notion-border-soft);
+	border-radius: 10px;
+	background: var(--notion-surface);
+}
+.notion-bar {
+	--value: 50%;
+	display: grid;
+	grid-template-columns: minmax(90px, 0.4fr) 2fr auto;
+	align-items: center;
+	gap: 10px;
+	font-size: 14px;
+}
+.notion-bar-label {
+	font-weight: 600;
+}
+.notion-bar[data-muted] {
+	opacity: 0.35;
+}
+.notion-bar[data-muted] .notion-bar-fill {
+	display: none;
+}
+.notion-bar[data-muted] .notion-bar-value {
+	visibility: hidden;
+}
+.notion-bar-track {
+	height: 10px;
+	overflow: hidden;
+	border-radius: 999px;
+	background: var(--notion-gray-bg);
+	box-shadow: inset 0 0 0 1px var(--notion-border-soft);
+}
+.notion-bar-fill {
+	height: 100%;
+	width: var(--value);
+	border-radius: 999px;
+	background: var(--notion-blue);
+}
+.notion-bar-value {
+	color: var(--notion-text-soft);
+	font-variant-numeric: tabular-nums;
+	font-size: 13px;
+}
+.notion-bar[data-tone="green"] .notion-bar-fill {
+	background: var(--notion-chart-3);
+}
+.notion-bar[data-tone="orange"] .notion-bar-fill {
+	background: var(--notion-chart-5);
+}
+.notion-bar[data-tone="red"] .notion-bar-fill {
+	background: var(--notion-chart-8);
+}
+
+/* -- Responsive: 820px ------------------------------------ */
+@media (max-width: 820px) {
+	.notion-bar {
+		grid-template-columns: 1fr;
+		gap: 6px;
+	}
+}
+/*
+ * stat-grid — Grid of stat cards with label, big number, caption, and trend.
+ *
+ * HTML:
+ * <section class="notion-stat-grid">
+ *   <div class="notion-stat">
+ *     <p class="notion-stat-label">Metric</p>
+ *     <p class="notion-stat-value">42%</p>
+ *     <p class="notion-stat-caption">Short explanation.</p>
+ *     <span class="notion-stat-trend">&#x2197; trend</span>
+ *   </div>
+ * </section>
+ */
+
+.notion-stat-grid {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 12px;
+	margin: 20px 0 6px;
+}
+.notion-stat {
+	padding: 16px;
+	border: 1px solid var(--notion-border-soft);
+	border-radius: 10px;
+	background: var(--notion-surface);
+	box-shadow: var(--notion-shadow);
+}
+.notion-stat-label {
+	margin: 0 0 6px;
+	color: var(--notion-text-soft);
+	font-size: 13px;
+	font-weight: 600;
+}
+.notion-stat-value {
+	margin: 0;
+	font-size: 32px;
+	line-height: 1.05;
+	letter-spacing: -0.04em;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+}
+.notion-stat-caption {
+	margin: 8px 0 0;
+	color: var(--notion-text-soft);
+	font-size: 13px;
+}
+.notion-stat-trend {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	margin-top: 10px;
+	padding: 3px 7px;
+	border-radius: 999px;
+	background: var(--notion-blue-bg);
+	color: var(--notion-blue);
+	font-size: 12px;
+	font-weight: 650;
+}
+
+/* -- Responsive: 1080px ----------------------------------- */
+@media (max-width: 1080px) {
+	.notion-stat-grid {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
+
+/* -- Responsive: 820px ------------------------------------ */
+@media (max-width: 820px) {
+	.notion-stat-grid {
+		grid-template-columns: 1fr;
+	}
+}
+/*
+ * toggle — Alias for the base <details> element.
+ * No additional styles beyond _base.css defaults.
+ *
+ * HTML:
+ * <details class="notion-toggle">
+ *   <summary>More detail</summary>
+ *   <p>Hidden content.</p>
+ * </details>
+ */
+
+/* .notion-toggle is now an alias -- bare <details> is styled identically */
+/* ===== Custom animations & study-guide polish ===== */
+
+/* Animated gradient background blobs */
+body{position:relative;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(40rem 40rem at 12% -8%, color-mix(in srgb,var(--notion-blue) 22%,transparent), transparent 60%),
+    radial-gradient(34rem 34rem at 105% 8%, color-mix(in srgb,var(--notion-chart-4) 20%,transparent), transparent 60%),
+    radial-gradient(40rem 40rem at 90% 100%, color-mix(in srgb,var(--notion-chart-3) 18%,transparent), transparent 60%);
+  animation:floatbg 18s ease-in-out infinite alternate;}
+@keyframes floatbg{0%{transform:translateY(0) scale(1)}100%{transform:translateY(-24px) scale(1.05)}}
+
+/* Top scroll progress bar */
+.progress-bar{position:fixed;top:0;left:0;height:4px;width:0%;z-index:50;
+  background:linear-gradient(90deg,var(--notion-blue),var(--notion-chart-4),var(--notion-chart-3));
+  box-shadow:0 0 12px color-mix(in srgb,var(--notion-blue) 60%,transparent);transition:width 80ms linear}
+
+/* Sticky chapter nav */
+.chap-nav{position:sticky;top:10px;z-index:40;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;
+  margin:8px auto 28px;padding:8px;width:fit-content;max-width:100%;
+  background:color-mix(in srgb,var(--notion-surface) 80%,transparent);backdrop-filter:blur(12px);
+  border:1px solid var(--notion-border-soft);border-radius:999px;box-shadow:var(--notion-shadow)}
+.chap-nav a{text-decoration:none;font-size:13px;font-weight:650;color:var(--notion-text-soft);
+  padding:7px 14px;border-radius:999px;transition:all 160ms ease}
+.chap-nav a:hover{background:var(--notion-surface-hover);color:var(--notion-text);transform:translateY(-1px)}
+
+/* Reveal on scroll */
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .6s cubic-bezier(.2,.7,.2,1),transform .6s cubic-bezier(.2,.7,.2,1)}
+.reveal.in{opacity:1;transform:none}
+.reveal.d1{transition-delay:.08s}.reveal.d2{transition-delay:.16s}.reveal.d3{transition-delay:.24s}.reveal.d4{transition-delay:.32s}
+
+/* Chapter header band */
+.chap-head{display:flex;align-items:center;gap:16px;margin:14px 0 6px;padding:20px 22px;border-radius:16px;
+  color:#fff;position:relative;overflow:hidden;box-shadow:var(--notion-shadow)}
+.chap-head h2{margin:0;color:#fff;font-size:28px}
+.chap-head .sub{margin:4px 0 0;color:rgba(255,255,255,.88);font-size:15px}
+.chap-head .emoji{font-size:44px;filter:drop-shadow(0 4px 10px rgba(0,0,0,.25));animation:bob 3s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-8px) rotate(4deg)}}
+.chap-head::after{content:"";position:absolute;right:-40px;top:-40px;width:160px;height:160px;border-radius:50%;
+  background:rgba(255,255,255,.12)}
+.c4{background:linear-gradient(120deg,#2783de,#5e9fe8)}
+.c6{background:linear-gradient(120deg,#d5803b,#eac26b)}
+.c7{background:linear-gradient(120deg,#7048b6,#bf8eda)}
+.c8{background:linear-gradient(120deg,#1f9d76,#72bc8f)}
+.chap-tag{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  background:rgba(255,255,255,.22);padding:3px 9px;border-radius:999px;margin-bottom:6px}
+
+/* Pop on hover for cards */
+.notion-card,.notion-panel,.notion-term,.notion-stat{transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+.notion-card:hover,.notion-panel:hover,.notion-term:hover,.notion-stat:hover{transform:translateY(-4px);
+  box-shadow:0 10px 26px rgba(0,0,0,.10)}
+
+/* Animated bar fills */
+.notion-bar-fill{width:0 !important;transition:width 1.1s cubic-bezier(.2,.7,.2,1)}
+.notion-bar-chart.in .notion-bar-fill{width:var(--value) !important}
+
+/* Big animated number */
+.count{font-variant-numeric:tabular-nums}
+
+/* Laundry / pipeline mini diagram */
+.pipe{display:grid;gap:6px;margin:18px 0;padding:16px;border:1px solid var(--notion-border-soft);border-radius:12px;background:var(--notion-surface);overflow-x:auto}
+.pipe-row{display:flex;gap:6px;align-items:center}
+.pipe-row .who{width:70px;font-weight:700;font-size:13px;flex-shrink:0}
+.stage{flex-shrink:0;width:54px;text-align:center;font-size:12px;font-weight:700;color:#fff;padding:8px 0;border-radius:8px;
+  opacity:0;transform:scale(.6);animation:pop .4s forwards}
+.pipe.in .stage{animation:pop .45s forwards}
+@keyframes pop{to{opacity:1;transform:scale(1)}}
+.s-if{background:#5e9fe8}.s-id{background:#72bc8f}.s-ex{background:#eac26b;color:#5a4a16}.s-mem{background:#de9255}.s-wb{background:#df84a8}
+.spacer{width:54px;flex-shrink:0}
+
+/* Flip flashcards */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-top:16px}
+.flip{background:transparent;height:150px;perspective:1000px;cursor:pointer}
+.flip-inner{position:relative;width:100%;height:100%;transition:transform .6s;transform-style:preserve-3d}
+.flip:hover .flip-inner,.flip.flipped .flip-inner{transform:rotateY(180deg)}
+.flip-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:14px;padding:16px;display:flex;
+  align-items:center;justify-content:center;text-align:center;box-shadow:var(--notion-shadow);border:1px solid var(--notion-border-soft)}
+.flip-front{background:var(--notion-surface);font-weight:750;font-size:16px}
+.flip-front .q{font-size:13px;color:var(--notion-blue);font-weight:700;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em}
+.flip-back{background:linear-gradient(135deg,var(--notion-blue),var(--notion-chart-4));color:#fff;transform:rotateY(180deg);font-size:14px;line-height:1.45}
+.flip-hint{text-align:center;color:var(--notion-text-faint);font-size:13px;margin-top:10px}
+
+/* Quiz */
+.quiz{margin-top:16px;display:grid;gap:16px}
+.q-block{padding:18px;border:1px solid var(--notion-border-soft);border-radius:14px;background:var(--notion-surface);box-shadow:var(--notion-shadow)}
+.q-block p.q-text{font-weight:700;margin:0 0 12px}
+.q-opt{display:block;width:100%;text-align:left;margin:7px 0;padding:11px 14px;border-radius:10px;border:1px solid var(--notion-border);
+  background:var(--notion-bg-soft);color:var(--notion-text);font-size:14px;font-weight:500;cursor:pointer;transition:all .15s}
+.q-opt:hover{border-color:var(--notion-blue);background:var(--notion-surface-hover)}
+.q-opt.correct{background:var(--notion-green-bg);border-color:var(--notion-chart-3);color:var(--notion-text)}
+.q-opt.wrong{background:var(--notion-red-bg);border-color:var(--notion-red)}
+.q-fb{margin:10px 0 0;font-size:13px;font-weight:600;display:none}
+.q-fb.show{display:block}
+
+/* Key term pill */
+.kt{background:var(--notion-blue-bg);color:var(--notion-blue);font-weight:700;padding:1px 7px;border-radius:6px;font-size:.92em}
+
+.fun{display:inline-block;animation:wiggle 2.5s ease-in-out infinite}
+@keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(8deg)}75%{transform:rotate(-8deg)}}
+</style></head>
+<body>
+<div class="progress-bar" id="prog"></div>
+<main class="notion-shell">
+
+<section class="notion-hero reveal">
+  <span class="notion-eyebrow">Study Guide <span class="fun">✨</span></span>
+  <h1>Computer Architecture &amp; Systems — Made Fun</h1>
+  <p>A colorful, animated recap of four lectures: Pipelining, the Pareto Principle, Interrupts, and Evaluating System Performance. Hover the cards, flip the flashcards, and test yourself with the quiz at the end.</p>
+</section>
+
+<nav class="chap-nav reveal">
+  <a href="#c4">⚡ Ch 4 · Pipelining</a>
+  <a href="#c6">📊 Ch 6 · Pareto 80/20</a>
+  <a href="#c7">🔔 Ch 7 · Interrupts</a>
+  <a href="#c8">🚀 Ch 8 · Performance</a>
+  <a href="#quiz">🧠 Quiz</a>
+</nav>
+
+<!-- ===================== CHAPTER 4 ===================== -->
+<section id="c4">
+  <div class="chap-head c4 reveal">
+    <span class="emoji">⚡</span>
+    <div>
+      <span class="chap-tag">Chapter 4</span>
+      <h2>Pipelining</h2>
+      <p class="sub">Do more work at once — like a smart laundry day.</p>
+    </div>
+  </div>
+
+  <div class="notion-callout reveal" data-tone="blue">
+    <div>🧺</div>
+    <div><strong>The Laundry Idea</strong>
+      <p>Wash (30 min) → Dry (40 min) → Fold (20 min). Doing 4 loads <em>one-at-a-time</em> takes <b>6 hours</b>. If you start the next load as soon as a machine is free (pipelining), it takes only <b>3.5 hours</b> — same work, way less waiting!</p>
+    </div>
+  </div>
+
+  <h3 class="reveal">The 5 Stages of MIPS</h3>
+  <p class="reveal notion-muted">Every instruction flows through five stages, one per clock cycle. While one instruction is being executed, the next is already being decoded — that's the magic.</p>
+  <div class="pipe reveal" id="pipe1">
+    <div class="pipe-row"><span class="who">Instr 1</span><span class="stage s-if">IF</span><span class="stage s-id">ID</span><span class="stage s-ex">EX</span><span class="stage s-mem">MEM</span><span class="stage s-wb">WB</span></div>
+    <div class="pipe-row"><span class="who">Instr 2</span><span class="spacer"></span><span class="stage s-if">IF</span><span class="stage s-id">ID</span><span class="stage s-ex">EX</span><span class="stage s-mem">MEM</span><span class="stage s-wb">WB</span></div>
+    <div class="pipe-row"><span class="who">Instr 3</span><span class="spacer"></span><span class="spacer"></span><span class="stage s-if">IF</span><span class="stage s-id">ID</span><span class="stage s-ex">EX</span><span class="stage s-mem">MEM</span><span class="stage s-wb">WB</span></div>
+  </div>
+  <div class="notion-card-grid reveal">
+    <article class="notion-card"><div class="notion-card-icon">📥</div><h3>IF · Instruction Fetch</h3><p>Get the instruction from memory; <code>PC ← PC + 4</code>.</p></article>
+    <article class="notion-card"><div class="notion-card-icon">🔍</div><h3>ID · Decode / Reg Fetch</h3><p>Decode it and read the source registers (A &amp; B).</p></article>
+    <article class="notion-card"><div class="notion-card-icon">🧮</div><h3>EX · Execute</h3><p>ALU does the math, or computes a memory address.</p></article>
+    <article class="notion-card"><div class="notion-card-icon">💾</div><h3>MEM · Memory</h3><p>Load or store data (ALU ops do nothing here).</p></article>
+    <article class="notion-card"><div class="notion-card-icon">✍️</div><h3>WB · Write Back</h3><p>Write the result back into the register file.</p></article>
+  </div>
+
+  <div class="notion-callout reveal" data-tone="green">
+    <div>💡</div>
+    <div><strong>Key lesson</strong>
+      <p>Pipelining doesn't speed up a <em>single</em> task's latency — it boosts <b>throughput</b> of the whole workload. Speed is limited by the <b>slowest stage</b>, and filling/draining the pipe costs a little.</p>
+    </div>
+  </div>
+
+  <h3 class="reveal">Why bother? (100 instructions)</h3>
+  <div class="notion-stat-grid reveal">
+    <div class="notion-stat"><p class="notion-stat-label">Single-cycle</p><p class="notion-stat-value count" data-to="4500">0</p><p class="notion-stat-caption">ns · 45ns × 1 CPI × 100</p></div>
+    <div class="notion-stat"><p class="notion-stat-label">Multicycle</p><p class="notion-stat-value count" data-to="4600">0</p><p class="notion-stat-caption">ns · 10ns × 4.6 CPI × 100</p></div>
+    <div class="notion-stat"><p class="notion-stat-label">Pipelined 🏆</p><p class="notion-stat-value count" data-to="1040">0</p><p class="notion-stat-caption">ns · ~4.3× faster!</p></div>
+  </div>
+
+  <h3 class="reveal">The 3 Hazards ⚠️</h3>
+  <p class="reveal notion-muted">Hazards are conditions that cause wrong behavior if not handled. Common fix: <span class="kt">stall</span> the pipeline (insert a “bubble” / NOP).</p>
+  <div class="notion-card-grid reveal">
+    <article class="notion-card"><div class="notion-card-icon">🏗️</div><h3>Structural</h3><p>Two instructions need the <b>same hardware</b> at once (e.g. one memory for fetch + data). <br><b>Fix:</b> duplicate hardware / Harvard architecture (separate I &amp; D memory).</p></article>
+    <article class="notion-card"><div class="notion-card-icon">🧦</div><h3>Data</h3><p>An instruction needs a <b>result not ready yet</b> (the “missing sock”). <br><b>Fix:</b> stall (bubble) or <b>forwarding/bypassing</b> — send the result straight to the next instruction.</p></article>
+    <article class="notion-card"><div class="notion-card-icon">🔀</div><h3>Control</h3><p>A <b>branch</b> changes which instruction comes next (<code>BEQ R1,R2,LABEL</code>). <br><b>Fix:</b> stall, predict “not taken,” or use branch predictors. Penalty ≈ 2–3 cycles.</p></article>
+  </div>
+
+  <div class="notion-callout reveal" data-tone="orange">
+    <div>🔢</div>
+    <div><strong>Branch math example</strong>
+      <p>20% branches, penalty 3 cycles → <code>CPI = 1 + (0.2 × 3) = 1.6</code>. That's a <b>60% performance drop</b> — so branch prediction really matters!</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== CHAPTER 6 ===================== -->
+<section id="c6">
+  <div class="chap-head c6 reveal">
+    <span class="emoji">📊</span>
+    <div>
+      <span class="chap-tag">Chapter 6</span>
+      <h2>The Pareto Principle (80/20)</h2>
+      <p class="sub">A few causes drive most of the results.</p>
+    </div>
+  </div>
+
+  <div class="notion-callout reveal">
+    <div>🎯</div>
+    <div><strong>The Rule in one line</strong>
+      <p><b>80% of outcomes come from 20% of causes.</b> The numbers aren't exact — they describe an <em>imbalance</em>. Named after economist <b>Vilfredo Pareto</b>, who saw 80% of Italy's land owned by 20% of people; later generalized by Joseph Juran for quality.</p>
+    </div>
+  </div>
+
+  <div class="notion-comparison reveal">
+    <div class="notion-panel"><h3>🔥 Vital Few (20%)</h3><p>Cause most of the impact. High importance → focus your resources here.</p><span class="notion-badge">Prioritize</span></div>
+    <div class="notion-panel"><h3>🌊 Trivial Many (80%)</h3><p>Contribute little impact. Lower priority — but don't ignore them completely.</p></div>
+  </div>
+
+  <h3 class="reveal">Everyday Examples</h3>
+  <div class="notion-card-grid reveal">
+    <article class="notion-card"><div class="notion-card-icon">💰</div><h3>Business</h3><p>20% of products generate 80% of revenue.</p></article>
+    <article class="notion-card"><div class="notion-card-icon">🐛</div><h3>Software</h3><p>20% of modules cause 80% of bugs.</p></article>
+    <article class="notion-card"><div class="notion-card-icon">📚</div><h3>Education</h3><p>20% of material appears in 80% of exams.</p></article>
+    <article class="notion-card"><div class="notion-card-icon">⏰</div><h3>Time</h3><p>2 productive hours give 80% of results.</p></article>
+    <article class="notion-card"><div class="notion-card-icon">🏭</div><h3>Manufacturing</h3><p>20% of defect types cause 80% of complaints.</p></article>
+    <article class="notion-card"><div class="notion-card-icon">📈</div><h3>Pareto Chart</h3><p>Bars (sorted high→low) + cumulative % line, with an 80% threshold.</p></article>
+  </div>
+
+  <h3 class="reveal">Worked Example — 100 Defects</h3>
+  <p class="reveal notion-muted">Sort defects, find each %, add cumulative %, then spot where you cross 80%.</p>
+  <div class="notion-bar-chart reveal" id="paretobar">
+    <div class="notion-bar" style="--value:50%"><span class="notion-bar-label">Defect A</span><div class="notion-bar-track"><div class="notion-bar-fill"></div></div><span class="notion-bar-value">50 · cum 50%</span></div>
+    <div class="notion-bar" style="--value:30%"><span class="notion-bar-label">Defect B</span><div class="notion-bar-track"><div class="notion-bar-fill"></div></div><span class="notion-bar-value">30 · cum 80%</span></div>
+    <div class="notion-bar" data-tone="orange" style="--value:10%"><span class="notion-bar-label">Defect C</span><div class="notion-bar-track"><div class="notion-bar-fill"></div></div><span class="notion-bar-value">10 · cum 90%</span></div>
+    <div class="notion-bar" data-tone="orange" style="--value:6%"><span class="notion-bar-label">Defect D</span><div class="notion-bar-track"><div class="notion-bar-fill"></div></div><span class="notion-bar-value">6 · cum 96%</span></div>
+    <div class="notion-bar" data-tone="orange" style="--value:4%"><span class="notion-bar-label">Defect E</span><div class="notion-bar-track"><div class="notion-bar-fill"></div></div><span class="notion-bar-value">4 · cum 100%</span></div>
+  </div>
+  <div class="notion-callout reveal" data-tone="green">
+    <div>✅</div>
+    <div><strong>Conclusion</strong>
+      <p>Defects <b>A + B = 80%</b> of all problems (the vital few). Fix those two first and you eliminate most defects — saving time, cost, and effort.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== CHAPTER 7 ===================== -->
+<section id="c7">
+  <div class="chap-head c7 reveal">
+    <span class="emoji">🔔</span>
+    <div>
+      <span class="chap-tag">Chapter 7</span>
+      <h2>Interrupts</h2>
+      <p class="sub">“Tell me when you need me” beats “are we there yet?”</p>
+    </div>
+  </div>
+
+  <h3 class="reveal">Polling vs. Interrupt</h3>
+  <div class="notion-comparison reveal">
+    <div class="notion-panel"><h3>🔁 Polling</h3><p>CPU <b>constantly checks</b> a device's status in a loop. Ties down the CPU and wastes cycles.</p><pre class="notion-code"><code>while(true){
+  if(PIND.2==0)
+    // do something;
+}</code></pre></div>
+    <div class="notion-panel"><h3>⚡ Interrupt</h3><p>Device <b>signals the CPU</b> only when needed. Efficient, has priority, and can be masked.</p><pre class="notion-code"><code>main(){
+  // common task
+}
+// when PIND.2==0
+//   do something</code></pre><span class="notion-badge">More efficient</span></div>
+  </div>
+
+  <h3 class="reveal">How an interrupt is serviced</h3>
+  <div class="notion-flow reveal">
+    <div class="notion-flow-step"><strong>1 · Save PC</strong><span>Stop fetching, save where you were.</span></div>
+    <div class="notion-flow-step"><strong>2 · Find ISR</strong><span>Look up address in the IVT.</span></div>
+    <div class="notion-flow-step"><strong>3 · Run ISR</strong><span>Execute the handler function.</span></div>
+    <div class="notion-flow-step"><strong>4 · Resume</strong><span>Restore PC, continue as before.</span></div>
+  </div>
+
+  <div class="notion-glossary reveal">
+    <div class="notion-term"><dt>ISR</dt><dd>Interrupt Service Routine — the function that runs when an interrupt fires.</dd></div>
+    <div class="notion-term"><dt>IVT</dt><dd>Interrupt Vector Table — stores the memory address of each ISR.</dd></div>
+    <div class="notion-term"><dt>Vector No.</dt><dd>Lower number = higher priority. INT0 &gt; INT1.</dd></div>
+    <div class="notion-term"><dt>SREG bit 7 (I)</dt><dd>Global interrupt enable. <code>sei()</code> sets it; disabled on reset.</dd></div>
+  </div>
+
+  <div class="notion-callout reveal" data-tone="blue">
+    <div>🔌</div>
+    <div><strong>Interrupt sources &amp; triggers</strong>
+      <p>Sources: external switches, timers, serial port, PWM, ADC. External INT0/INT1 can be <b>edge-triggered</b> (on a signal change) or <b>level-triggered</b> (on a specific value, low by default).</p>
+    </div>
+  </div>
+
+  <h3 class="reveal">5 Steps to Program an Interrupt</h3>
+  <div class="notion-list reveal">
+    <div class="notion-list-item"><div class="notion-index">1</div><div><h3>Include the header</h3><p><code>#include &lt;avr/interrupt.h&gt;</code></p></div></div>
+    <div class="notion-list-item"><div class="notion-index">2</div><div><h3>Define the handler</h3><p>Use the <code>ISR(vector_name)</code> macro (updates the IVT).</p></div></div>
+    <div class="notion-list-item"><div class="notion-index">3</div><div><h3>Enable the specific interrupt</h3><p>e.g. <code>GICR |= (1&lt;&lt;INT0);</code></p></div></div>
+    <div class="notion-list-item"><div class="notion-index">4</div><div><h3>Configure trigger details</h3><p>Set MCUCR for edge/level (e.g. falling edge).</p></div></div>
+    <div class="notion-list-item"><div class="notion-index">5</div><div><h3>Enable globally</h3><p>Call <code>sei();</code> to switch on the interrupt subsystem.</p></div></div>
+  </div>
+
+  <details class="notion-toggle reveal"><summary>💻 Example: toggle PORTB.5 when INT0 goes low</summary>
+  <pre class="notion-code"><code>#include &lt;avr/io.h&gt;
+#include &lt;avr/interrupt.h&gt;
+int main(){
+  DDRB = 1&lt;&lt;5;        // PB5 output
+  MCUCR = 0x2;        // INT0 falling-edge
+  GICR |= (1&lt;&lt;INT0);  // enable external INT0
+  sei();              // enable interrupts
+  while(1);           // wait here
+}
+ISR(INT0_vect){       // handler
+  PORTB ^= (1&lt;&lt;5);    // toggle PB5
+}</code></pre></details>
+</section>
+
+<!-- ===================== CHAPTER 8 ===================== -->
+<section id="c8">
+  <div class="chap-head c8 reveal">
+    <span class="emoji">🚀</span>
+    <div>
+      <span class="chap-tag">Chapter 8</span>
+      <h2>Evaluating System Performance</h2>
+      <p class="sub">Be correct first — then be fast.</p>
+    </div>
+  </div>
+
+  <div class="notion-callout reveal" data-tone="green">
+    <div>🎯</div>
+    <div><strong>Goals</strong><p>Ensure correctness → improve speed → optimize resource usage → enhance user experience. <b>Correctness always comes first.</b></p></div>
+  </div>
+
+  <h3 class="reveal">Performance Metrics</h3>
+  <div class="notion-card-grid reveal">
+    <article class="notion-card"><div class="notion-card-icon">✅</div><h3>Correctness</h3><p>Accurate results (functional + logical).</p></article>
+    <article class="notion-card"><div class="notion-card-icon">⚡</div><h3>Speed</h3><p>Execution time / latency.</p></article>
+    <article class="notion-card"><div class="notion-card-icon">📦</div><h3>Throughput</h3><p>Tasks completed per unit time.</p></article>
+    <article class="notion-card"><div class="notion-card-icon">💻</div><h3>Resource Use</h3><p>CPU, memory, disk usage.</p></article>
+    <article class="notion-card"><div class="notion-card-icon">📈</div><h3>Scalability</h3><p>Ability to handle growth.</p></article>
+    <article class="notion-card"><div class="notion-card-icon">🔍</div><h3>Profiling</h3><p>Analyze behavior to find bottlenecks.</p></article>
+  </div>
+
+  <h3 class="reveal">Profiling Tools</h3>
+  <div class="notion-glossary reveal">
+    <div class="notion-term"><dt>gprof</dt><dd>Time per function, call counts, and who-calls-whom → find hotspots.</dd></div>
+    <div class="notion-term"><dt>perf</dt><dd>Low-level Linux tool: CPU cycles, cache hits/misses, branch mispredicts.</dd></div>
+    <div class="notion-term"><dt>VisualVM</dt><dd>GUI profiler for Java: memory, CPU, threads, leaks.</dd></div>
+    <div class="notion-term"><dt>Intel VTune</dt><dd>Deep hardware profiling for C/C++ &amp; parallel apps.</dd></div>
+  </div>
+
+  <h3 class="reveal">Compiler Optimizations</h3>
+  <div class="notion-card-grid reveal">
+    <article class="notion-card"><div class="notion-card-icon">🔁</div><h3>Loop Unrolling</h3><p>Do several iterations per pass to cut loop-control overhead.</p></article>
+    <article class="notion-card"><div class="notion-card-icon">📥</div><h3>Inline Expansion</h3><p>Replace a function call with its body — no call overhead.</p></article>
+    <article class="notion-card"><div class="notion-card-icon">🗑️</div><h3>Dead Code Elimination</h3><p>Remove unreachable code or unused results.</p></article>
+    <article class="notion-card"><div class="notion-card-icon">🧮</div><h3>Constant Folding</h3><p>Evaluate constant expressions at compile time.</p></article>
+  </div>
+
+  <div class="notion-callout reveal" data-tone="orange">
+    <div>📐</div>
+    <div><strong>Pareto meets optimization</strong>
+      <p><b>80% of performance issues come from 20% of the code.</b> Profile → find hotspots → optimize critical sections → re-measure. Don't waste time on low-impact areas.</p>
+    </div>
+  </div>
+
+  <h3 class="reveal">Worked Example — 10,000 records</h3>
+  <p class="reveal notion-muted">Output is correct but slow. Profiling shows sorting eats 60% of the time — the bottleneck. Swap Bubble Sort O(n²) → Merge Sort O(n log n).</p>
+  <div class="notion-stat-grid reveal">
+    <div class="notion-stat"><p class="notion-stat-label">Before</p><p class="notion-stat-value">5.0s</p><p class="notion-stat-caption">2,000 records/sec</p></div>
+    <div class="notion-stat"><p class="notion-stat-label">After</p><p class="notion-stat-value">3.0s</p><p class="notion-stat-caption">~3,333 records/sec</p></div>
+    <div class="notion-stat"><p class="notion-stat-label">Speedup</p><p class="notion-stat-value">1.67×</p><p class="notion-stat-caption">≈40% faster →</p><span class="notion-stat-trend">↗ +40%</span></div>
+  </div>
+  <div class="notion-callout reveal" data-tone="blue">
+    <div>🔮</div>
+    <div><strong>Future &amp; challenges</strong><p>AI-driven optimization, automated profiling, energy-efficient &amp; cloud/distributed computing — while balancing rising complexity, security, and scale.</p></div>
+  </div>
+</section>
+
+<!-- ===================== FLASHCARDS ===================== -->
+<section>
+  <h2 class="reveal">🃏 Flashcards</h2>
+  <p class="reveal notion-muted">Hover (or tap) a card to reveal the answer.</p>
+  <div class="cards reveal">
+    <div class="flip"><div class="flip-inner"><div class="flip-face flip-front"><span><span class="q">Pipelining</span>What does it improve?</span></div><div class="flip-face flip-back">Throughput of the whole workload — not the latency of a single task.</div></div></div>
+    <div class="flip"><div class="flip-inner"><div class="flip-face flip-front"><span><span class="q">Data Hazard</span>Best fix?</span></div><div class="flip-face flip-back">Forwarding (bypassing) the result directly; stall only if needed.</div></div></div>
+    <div class="flip"><div class="flip-inner"><div class="flip-face flip-front"><span><span class="q">Pareto</span>The 80/20 rule says?</span></div><div class="flip-face flip-back">80% of outcomes come from 20% of causes — focus on the vital few.</div></div></div>
+    <div class="flip"><div class="flip-inner"><div class="flip-face flip-front"><span><span class="q">Interrupts</span>IVT stores what?</span></div><div class="flip-face flip-back">The memory address of each ISR (interrupt handler).</div></div></div>
+    <div class="flip"><div class="flip-inner"><div class="flip-face flip-front"><span><span class="q">AVR</span>What does sei() do?</span></div><div class="flip-face flip-back">Globally enables interrupts (sets bit 7 ‘I’ in SREG).</div></div></div>
+    <div class="flip"><div class="flip-inner"><div class="flip-face flip-front"><span><span class="q">Performance</span>What comes first?</span></div><div class="flip-face flip-back">Correctness — then speed and optimization.</div></div></div>
+  </div>
+  <p class="flip-hint">💡 Tip: on mobile, tap to flip.</p>
+</section>
+
+<!-- ===================== QUIZ ===================== -->
+<section id="quiz">
+  <h2 class="reveal">🧠 Quick Quiz</h2>
+  <p class="reveal notion-muted">Click an answer — green means correct!</p>
+  <div class="quiz reveal">
+    <div class="q-block">
+      <p class="q-text">1. Pipelining mainly improves…</p>
+      <button class="q-opt" data-c="0">The latency of a single instruction</button>
+      <button class="q-opt" data-c="1">The throughput of the whole workload</button>
+      <button class="q-opt" data-c="0">The clock speed of the CPU</button>
+      <p class="q-fb">✅ Right — more instructions finish per unit time, even if each one isn't faster.</p>
+    </div>
+    <div class="q-block">
+      <p class="q-text">2. A branch instruction causes which hazard?</p>
+      <button class="q-opt" data-c="0">Structural</button>
+      <button class="q-opt" data-c="0">Data</button>
+      <button class="q-opt" data-c="1">Control</button>
+      <p class="q-fb">✅ Control hazard — the CPU doesn't yet know the next instruction.</p>
+    </div>
+    <div class="q-block">
+      <p class="q-text">3. In the Pareto example, which defects are the “vital few”?</p>
+      <button class="q-opt" data-c="1">A and B (80% of defects)</button>
+      <button class="q-opt" data-c="0">C, D and E</button>
+      <button class="q-opt" data-c="0">All five equally</button>
+      <p class="q-fb">✅ A + B together make up 80% of the problem.</p>
+    </div>
+    <div class="q-block">
+      <p class="q-text">4. Compared to polling, interrupts are…</p>
+      <button class="q-opt" data-c="1">More efficient — CPU acts only when signaled</button>
+      <button class="q-opt" data-c="0">Slower because the CPU keeps checking</button>
+      <button class="q-opt" data-c="0">Unable to have priority</button>
+      <p class="q-fb">✅ The device signals the CPU, freeing it for other work.</p>
+    </div>
+    <div class="q-block">
+      <p class="q-text">5. Replacing Bubble Sort O(n²) with Merge Sort O(n log n) is an example of…</p>
+      <button class="q-opt" data-c="1">Algorithmic optimization</button>
+      <button class="q-opt" data-c="0">Dead code elimination</button>
+      <button class="q-opt" data-c="0">Constant folding</button>
+      <p class="q-fb">✅ You improved the algorithm itself — the biggest lever.</p>
+    </div>
+  </div>
+  <div class="notion-callout reveal" data-tone="green" style="margin-top:24px">
+    <div>🎉</div>
+    <div><strong>You made it!</strong><p>Pipelining = parallel stages · Pareto = focus on the vital 20% · Interrupts = react on demand · Performance = profile then optimize the hotspots. Good luck on the exam!</p></div>
+  </div>
+
+  <p class="notion-footer">Built from Chapters 4, 6, 7 &amp; 8 · Animated study guide · Hover, flip, and quiz yourself.</p>
+</section>
+
+</main>
+
+<script>
+// scroll progress
+const prog=document.getElementById('prog');
+addEventListener('scroll',()=>{const h=document.documentElement;const sc=h.scrollTop/(h.scrollHeight-h.clientHeight);prog.style.width=(sc*100)+'%';},{passive:true});
+
+// reveal on scroll
+const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');
+  if(e.target.id==='paretobar'||e.target.classList.contains('notion-bar-chart'))e.target.classList.add('in');
+  io.unobserve(e.target);}});},{threshold:.15});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+document.querySelectorAll('.notion-bar-chart,.pipe').forEach(el=>io.observe(el));
+
+// count-up numbers
+const cio=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){const el=e.target;const to=+el.dataset.to;let s=null;const dur=1100;
+  function step(t){if(!s)s=t;const p=Math.min((t-s)/dur,1);el.textContent=Math.floor(p*to).toLocaleString();if(p<1)requestAnimationFrame(step);}
+  requestAnimationFrame(step);cio.unobserve(el);}});},{threshold:.5});
+document.querySelectorAll('.count').forEach(el=>cio.observe(el));
+
+// flashcards tap
+document.querySelectorAll('.flip').forEach(f=>f.addEventListener('click',()=>f.classList.toggle('flipped')));
+
+// quiz
+document.querySelectorAll('.q-block').forEach(b=>{b.querySelectorAll('.q-opt').forEach(opt=>{opt.addEventListener('click',()=>{
+  const correct=opt.dataset.c==='1';
+  if(correct){opt.classList.add('correct');b.querySelector('.q-fb').classList.add('show');
+    b.querySelectorAll('.q-opt').forEach(o=>o.disabled=true);}
+  else{opt.classList.add('wrong');}
+});});});
+</script>
+</body></html>
